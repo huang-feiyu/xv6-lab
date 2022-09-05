@@ -11,8 +11,8 @@ entryother
 initcode
 initcode.out
 kernelmemfs
-mkfs
 kernel/kernel
+mkfs
 user/usys.S
 .gdbinit
 myapi.key
