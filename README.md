@@ -1,6 +1,6 @@
 # xv6-lab
 
-> MIT 6.S081 xv6 labs implementation & notes; aka, HITsz 2022 年 OS 课程实验备份.
+> MIT [6.S081](https://pdos.csail.mit.edu/6.S081/2020/) xv6 labs implementation & notes; aka, HITsz 2022 年 OS 课程实验备份.
 
 * [HIT: labs](https://hitsz-cslab.gitee.io/os-labs/)
 * [MIT: labs](https://pdos.csail.mit.edu/6.S081/2020/labs/)
