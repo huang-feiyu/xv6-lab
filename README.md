@@ -15,4 +15,5 @@
 ## Implementation
 
 * [util](https://github.com/huang-feiyu/xv6-lab/tree/util): **100/100**
+* [syscall](https://github.com/huang-feiyu/xv6-lab/tree/syscall): **35/35**
 
