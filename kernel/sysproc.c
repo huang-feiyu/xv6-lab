@@ -110,3 +110,17 @@ sys_trace(void)
   myproc()->mask = mask;
   return 0;
 }
+
+/*
+ * sys_sysinfo - add sysinfo to kernel space
+ *             - Huang (c) 2022-09-07
+ */
+uint64
+sys_sysinfo(void)
+{
+  uint64 p;
+
+  if(argaddr(0, &p) < 0)
+    return -1;
+  return 0;
+}

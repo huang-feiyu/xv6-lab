@@ -4,6 +4,11 @@
 > you understand how they work and will expose you to some of the internals of
 > the xv6 kernel.
 
+Add a syscall prototype:
+1. declare in *user/user.h*
+2. add stub to *user/usys.pl* to produce actual syscall stubs
+3. add syscall number to *kernel/syscall.h*
+
 ## System call tracing
 
 Add system call tracing feature to print sycall info, we need to add a syscall
@@ -45,3 +50,9 @@ syscall(void)
   } else {
     printf("%d %s: unknown sys call %d\n",
 ```
+
+## Sysinfo
+
+Add a system call `sysinfo(struct sysinfo*)` to collect information about
+running system.
+
