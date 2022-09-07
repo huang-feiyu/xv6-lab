@@ -82,18 +82,19 @@ kalloc(void)
 }
 
 /*
- * getfree - collect the amount of free memory
+ * freemem - collect the amount of free memory
  *         - Huang (c) 2022-09-07
  */
 uint64
-getfree(void)
+freemem(void)
 {
   int pagenum = 0;
   struct run *r;
 
+  // REVIEW: is blocking required?
   acquire(&kmem.lock);
   r = kmem.freelist;
-  while ((r = kmem.freelist))
+  while((r = kmem.freelist))
     pagenum++;
   release(&kmem.lock);
 

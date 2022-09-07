@@ -125,7 +125,7 @@ sys_sysinfo(void)
     return -1;
 
   struct sysinfo *info;
-  info->freemem = getfree();
+  info->freemem = freemem();
 
   return 0;
 }
