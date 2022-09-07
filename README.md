@@ -6,7 +6,21 @@
 
 ## Prepare
 
-TODO: How a syscall runs?
+Very first syscall:
+1. `main` inits devices and subsystems
+2. `main` creates 1st process via `userinit`
+3. `userinit` jumps to *initcode.S*
+4. *initcode.S* executes `/init` via syscall `exec`
+
+---
+
+Inside user invoking syscall:
+0. When *echo.c* call syscall `write`
+1. User `main` jumps into *usys.S*
+2. *usys.S* loads arg and executes `ecall`
+3. `ecall` jumps to *trampoline.S*
+4. *trampoline.S* saves context and continues to `syscall` in *syscall.c*
+5. `syscall` executes the syscall
 
 ---
 
@@ -117,4 +131,13 @@ freefd(void)
 
   return num;
 }
+```
+
+---
+
+```
+Time:   7 Hours
+Score:  35/35
+Author: Huang
+Date:   2022-09-07
 ```
