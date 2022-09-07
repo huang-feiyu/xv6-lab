@@ -121,14 +121,15 @@ sys_sysinfo(void)
 {
   uint64 addr; // virtual address of user space
   struct proc *p = myproc();
-  struct sysinfo *info;
 
   if(argaddr(0, &addr) < 0)
     return -1;
 
-  info->freemem = freemem();
-  info->nproc = procnum();
-  info->freefd = freefd();
+  struct sysinfo info = {
+    freemem(),
+    procnum(),
+    freefd(),
+  };
 
   // copy info from kernel to user, aka myproc()
   if(copyout(p->pagetable, addr, (char *)&info, sizeof(info)) < 0)

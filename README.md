@@ -71,8 +71,20 @@ running system.
 
 ### Debug
 
-Output: -> cannot end reading info
+<b>*</b> cannot end reading info -> bug01
+
+Output:
 ```
 sys_sysinfo: start
 sys_sysinfo: start reading info
+```
+
+GDB stuck at *kalloc.c* line 97.
+
+```diff
+- while((r = r->next)){
++ while(r){
+    pagenum++;
++   r = r->next;
+  }
 ```

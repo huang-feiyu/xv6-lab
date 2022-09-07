@@ -94,8 +94,10 @@ freemem(void)
   // REVIEW: is blocking required?
   acquire(&kmem.lock);
   r = kmem.freelist;
-  while((r = kmem.freelist))
+  while(r){
     pagenum++;
+    r = r->next;
+  }
   release(&kmem.lock);
 
   return pagenum * PGSIZE;
