@@ -119,15 +119,20 @@ sys_trace(void)
 uint64
 sys_sysinfo(void)
 {
-  uint64 addr;
+  uint64 addr; // virtual address of user space
+  struct proc *p = myproc();
+  struct sysinfo *info;
 
   if(argaddr(0, &addr) < 0)
     return -1;
 
-  struct sysinfo *info;
   info->freemem = freemem();
   info->nproc = procnum();
   info->freefd = freefd();
+
+  // copy info from kernel to user, aka myproc()
+  if(copyout(p->pagetable, addr, (char *)&info, sizeof(info)) < 0)
+    return -1;
 
   return 0;
 }

@@ -68,3 +68,11 @@ running system.
 * *proc.c*: Processes and scheduling
   * collect number of processes, read `procdump()`
   * collect number of free file descriptor
+
+### Debug
+
+Output: -> cannot end reading info
+```
+sys_sysinfo: start
+sys_sysinfo: start reading info
+```
