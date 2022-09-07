@@ -1,6 +1,6 @@
 # syscall
 
-> [syscall](https://pdos.csail.mit.edu/6.S081/2021/labs/syscall.html) lab Help
+> [syscall](https://pdos.csail.mit.edu/6.S081/2021/labs/syscall.html) lab helps
 > you understand how they work and will expose you to some of the internals of
 > the xv6 kernel.
 
