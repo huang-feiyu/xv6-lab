@@ -6,6 +6,11 @@
 #include "proc.h"
 #include "defs.h"
 
+#include "sleeplock.h"
+#include "fs.h"
+#include "file.h"
+#include "stat.h"
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -707,10 +712,9 @@ procnum(void)
   int num = 0;
   struct proc *p;
 
-  for(p = proc; p < &proc[NPROC]; p++){
+  for(p = proc; p < &proc[NPROC]; p++)
     if(p->state == UNUSED)
       num++;
-  }
 
   return num;
 }
@@ -723,9 +727,11 @@ uint64
 freefd(void)
 {
   int num = 0;
-  struct proc *p = proc;
+  struct proc *p = myproc(); // current proc, not the head
 
-  num = NELEM(p->ofile);
+  for(int i = 0; i < NOFILE; i++)
+    if(p->ofile[i] == 0)
+      num++;
 
   return num;
 }

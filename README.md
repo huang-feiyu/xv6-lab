@@ -100,3 +100,21 @@ GDB stuck at *kalloc.c* line 97.
 -   num++;
   }
 ```
+
+<b>*</b> wrong freefd => bug03
+
+```diff
+freefd(void)
+{
+  int num = 0;
+- struct proc *p = proc;
++ struct proc *p = myproc(); // current proc, not the head
+
+- num = NELEM(p->ofile);
++ for(int i = 0; i < NOFILE; i++)
++   if(p->ofile[i] == 0)
++     num++;
+
+  return num;
+}
+```
