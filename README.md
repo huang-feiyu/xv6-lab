@@ -108,7 +108,7 @@ freefd(void)
 {
   int num = 0;
 - struct proc *p = proc;
-+ struct proc *p = myproc(); // current proc, not the head
++ struct proc *p = myproc();
 
 - num = NELEM(p->ofile);
 + for(int i = 0; i < NOFILE; i++)
