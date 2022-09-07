@@ -62,7 +62,8 @@ syscall(void)
 Add a system call `sysinfo(struct sysinfo*)` to collect information about
 running system.
 
-* `kalloc.c`: Physical page allocator (xv6 Chapter 3.5)
+* *kalloc.c*: Physical page allocator (xv6 Chapter 3.5)
   * a *free list* of physical memory pages
   * `kmem` is a global variable with a *lock* and a *free list*
-* 
+* *proc.c*: Processes and scheduling
+  * collect number of processes, read `procdump()`

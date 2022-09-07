@@ -696,3 +696,22 @@ procdump(void)
     printf("\n");
   }
 }
+
+/*
+ * procnum - collect the number of processes
+ *         - Huang (c) 2022-09-07
+ */
+uint64
+procnum(void)
+{
+  int num = 0;
+  struct proc *p;
+
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state == UNUSED)
+      continue;
+    num++;
+  }
+
+  return num;
+}

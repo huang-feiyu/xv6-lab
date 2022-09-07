@@ -126,6 +126,7 @@ sys_sysinfo(void)
 
   struct sysinfo *info;
   info->freemem = freemem();
+  info->nproc = procnum();
 
   return 0;
 }
