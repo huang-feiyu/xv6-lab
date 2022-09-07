@@ -71,7 +71,7 @@ running system.
 
 ### Debug
 
-<b>*</b> cannot end reading info -> bug01
+<b>*</b> cannot end reading info => bug01
 
 Output:
 ```
@@ -86,5 +86,17 @@ GDB stuck at *kalloc.c* line 97.
 + while(r){
     pagenum++;
 +   r = r->next;
+  }
+```
+
+<b>*</b> wrong nproc => bug02
+
+```diff
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state == UNUSED) {
+-     continue;
++     num++;
+    }
+-   num++;
   }
 ```

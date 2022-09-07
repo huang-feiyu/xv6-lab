@@ -709,8 +709,7 @@ procnum(void)
 
   for(p = proc; p < &proc[NPROC]; p++){
     if(p->state == UNUSED)
-      continue;
-    num++;
+      num++;
   }
 
   return num;
