@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64
 sys_exit(void)
@@ -112,15 +113,19 @@ sys_trace(void)
 }
 
 /*
- * sys_sysinfo - add sysinfo to kernel space
+ * sys_sysinfo - copy a struct sysinfo back to user space
  *             - Huang (c) 2022-09-07
  */
 uint64
 sys_sysinfo(void)
 {
-  uint64 p;
+  uint64 addr;
 
-  if(argaddr(0, &p) < 0)
+  if(argaddr(0, &addr) < 0)
     return -1;
+
+  struct sysinfo *info;
+  info->freemem = getfree();
+
   return 0;
 }

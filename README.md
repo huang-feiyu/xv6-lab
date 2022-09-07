@@ -4,6 +4,12 @@
 > you understand how they work and will expose you to some of the internals of
 > the xv6 kernel.
 
+## Prepare
+
+TODO: How a syscall runs?
+
+---
+
 Add a syscall prototype:
 1. declare in *user/user.h*
 2. add stub to *user/usys.pl* to produce actual syscall stubs
@@ -56,3 +62,7 @@ syscall(void)
 Add a system call `sysinfo(struct sysinfo*)` to collect information about
 running system.
 
+* `kalloc.c`: Physical page allocator (xv6 Chapter 3.5)
+  * a *free list* of physical memory pages
+  * `kmem` is a global variable with a *lock* and a *free list*
+* 
