@@ -715,3 +715,18 @@ procnum(void)
 
   return num;
 }
+
+/*
+ * freefd - collect the number of free file descriptor
+ *        - Huang (c) 2022-09-07
+ */
+uint64
+freefd(void)
+{
+  int num = 0;
+  struct proc *p = proc;
+
+  num = NELEM(p->ofile);
+
+  return num;
+}

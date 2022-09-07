@@ -127,6 +127,7 @@ sys_sysinfo(void)
   struct sysinfo *info;
   info->freemem = freemem();
   info->nproc = procnum();
+  info->freefd = freefd();
 
   return 0;
 }

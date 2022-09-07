@@ -67,3 +67,4 @@ running system.
   * `kmem` is a global variable with a *lock* and a *free list*
 * *proc.c*: Processes and scheduling
   * collect number of processes, read `procdump()`
+  * collect number of free file descriptor
