@@ -11,6 +11,7 @@
 
 * [Chapter 1](./Notes/Note01.md): Operating system Interfaces
 * [Chapter 2](./Notes/Note02.md): Operating system Organization
+* [Chapter 4](./Notes/Note04.md): Traps and system calls
 
 ## Implementation
 
