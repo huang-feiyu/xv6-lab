@@ -101,11 +101,15 @@ walkaddr(pagetable_t pagetable, uint64 va)
     return 0;
 
   pte = walk(pagetable, va, 0);
-  // idea from others
+  // REVIEW: idea from others; Need a explaination
+  // Ans: When a `write()` or `read` syscall attempts to access unallocated
+  //      address, syscall does **not** use page table hardware to access
+  //      => no page fault. So need a process in the kernel.
+  //         (I haven't read Chapter 3 or read vm.c carely,
+  //          so it is hard for to find out.)
   if(pte == 0 || (*pte & PTE_V) == 0){
-    if(pgalloc(va)){
+    if(pgalloc(va))
       return 0;
-    }
     walk(pagetable, va, 0);
   }
   if((*pte & PTE_U) == 0)

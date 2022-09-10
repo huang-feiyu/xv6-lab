@@ -86,7 +86,7 @@ Add some error handling code according to the hints.
 
 <b>*</b> only sbrkarg FAILED => bug02
 
-`sbrk()` in sbrkarg won't stop. It seems like my allocation doesn't work.
+<i>`sbrk()` in sbrkarg won't stop. It seems like my allocation doesn't work.</i>
 
 ```diff
 uint64
@@ -117,4 +117,21 @@ walkaddr(pagetable_t pagetable, uint64 va)
 }
 ```
 
-TODO: Need an explaination.
+Explaination:
+
+> Handle the case in which a process passes a valid address from sbrk() to a
+> system call such as read or write, but the memory for that address has not yet
+> been allocated. (Hint from pdos)
+
+When a `write()` or `read` syscall attempts to access unallocated address,
+syscall does **not** use page table hardware to access -> no page fault.
+We need a process while syscall accessing the unallocated address.
+
+---
+
+```
+Time:   6 Hours
+Score:  119/119
+Author: Huang
+Date:   2022-09-10
+```
