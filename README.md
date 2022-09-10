@@ -81,3 +81,7 @@ pgalloc()
 ### Lazytests and Usertests
 
 Add some error handling code according to the hints.
+
+##### DEBUG
+
+<b>*</b> only sbrkarg FAILED => bug02

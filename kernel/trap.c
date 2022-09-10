@@ -258,7 +258,7 @@ pgalloc()
   // allocate phisical pages one by one, aka. spread by time
   mem = kalloc();
   if (mem == 0) return -2;
-  memset(mem, 0, PGSIZE); // fill with junk
+  memset(mem, 0, PGSIZE); // fill with 0 (0 is the initial value, not junk)
 
   if (mappages(p->pagetable, addr, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
     kfree(mem);

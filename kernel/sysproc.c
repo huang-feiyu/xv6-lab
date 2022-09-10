@@ -54,14 +54,12 @@ printf("sys_sbrk: n=0x%x, addr=%p\n", n, addr);
 #endif
 
   if(n < 0) // shrink
-    uvmdealloc(p->pagetable, addr, addr + n);
-
-  // if(growproc(n) < 0)
-  //   return -1;
-  myproc()->sz += n; // lazy allocation for increase
+    p->sz = uvmdealloc(p->pagetable, addr, addr + n);
+  else
+    p->sz = addr + n; // lazy allocation for increase
 
 #ifdef DEBUG
-printf("                     sz  =%p\n", myproc()->sz);
+printf("                     sz  =%p\n", p->sz);
 #endif
 
   return addr;
