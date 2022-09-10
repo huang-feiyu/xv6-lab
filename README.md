@@ -44,3 +44,36 @@ virtual address stored in `stval`.
 
 <b>*</b> "remap" raised by `mappages()` => bug01
 
+Output: Page table skip pte[4].
+```diff
+===page fault: process success===
+
+page table 0x0000000087f75000
+..0: pte 0x0000000021fdc801 pa 0x0000000087f72000
+.. ..0: pte 0x0000000021fd9401 pa 0x0000000087f65000
+.. .. ..0: pte 0x0000000021fdc05f pa 0x0000000087f70000
+.. .. ..1: pte 0x0000000021fd98df pa 0x0000000087f66000
+.. .. ..2: pte 0x0000000021fdc40f pa 0x0000000087f71000
+.. .. ..3: pte 0x0000000021fd68df pa 0x0000000087f5a000
++. .. ..5: pte 0x0000000021fd641f pa 0x0000000087f59000
+..255: pte 0x0000000021fdd001 pa 0x0000000087f74000
+.. ..511: pte 0x0000000021fdcc01 pa 0x0000000087f73000
+.. .. ..510: pte 0x0000000021fd90c7 pa 0x0000000087f64000
+.. .. ..511: pte 0x0000000020001c4b pa 0x0000000080007000
+```
+
+After adding pte[5], it replayed the page fault process.
+
+```diff
+int
+pgalloc()
+{
+  char *mem;
+  uint64 addr = r_stval();  // VA caused exception
+  uint64 sz = myproc()->sz; // sbrk "has" allocated memory addr
+
+  if (sz <= addr) return -1;
+
++ addr = PGROUNDUP(addr);
++ addr = PGROUNDDOWN(addr);
+```

@@ -70,7 +70,7 @@ usertrap(void)
     // ok
   } else if(r_scause() == 0xf || r_scause() == 0xd){
 #ifdef DEBUG
-    printf("%s page fault: on %p\n", r_scause() == 0xf ? "store" : "load", r_stval());
+    printf("\n%s page fault: on va %p\n", r_scause() == 0xf ? "store" : "load", r_stval());
     vmprint(p->pagetable);
 #endif
     // page allocation
@@ -79,7 +79,7 @@ usertrap(void)
       p->killed = 1;
     }
 #ifdef DEBUG
-    printf("page fault: process success\n");
+    printf("===page fault: process success===\n");
     vmprint(p->pagetable);
 #endif
   } else {
@@ -242,12 +242,15 @@ pgalloc()
 {
   char *mem;
   // REVIEW: will the VA makes addr below VA unvalid?
+  // Ans: after debugging bug01 & bug00, it is obviously: we only allocate one
+  //      page a time, and wherever access to VA, if it is unallocated then
+  //      allocate the page it locates.
   uint64 addr = r_stval();  // VA caused exception
   uint64 sz = myproc()->sz; // sbrk "has" allocated memory addr
 
   if (sz <= addr) return -1;
 
-  addr = PGROUNDUP(addr);
+  addr = PGROUNDDOWN(addr);
   // allocate phisical pages one by one, aka. spread by time
   mem = kalloc();
   if (mem == 0) return -2;
