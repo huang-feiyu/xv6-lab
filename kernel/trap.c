@@ -69,15 +69,19 @@ usertrap(void)
   } else if((which_dev = devintr()) != 0){
     // ok
   } else if(r_scause() == 0xf || r_scause() == 0xd){
+#ifdef DEBUG
     printf("%s page fault: on %p\n", r_scause() == 0xf ? "store" : "load", r_stval());
     vmprint(p->pagetable);
+#endif
     // page allocation
     if(pgalloc()){
       printf("pgalloc: allocating page failed\n");
       p->killed = 1;
     }
+#ifdef DEBUG
     printf("page fault: process success\n");
     vmprint(p->pagetable);
+#endif
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
@@ -237,7 +241,6 @@ int
 pgalloc()
 {
   char *mem;
-  uint64 a;
   // REVIEW: will the VA makes addr below VA unvalid?
   uint64 addr = r_stval();  // VA caused exception
   uint64 sz = myproc()->sz; // sbrk "has" allocated memory addr
@@ -245,16 +248,14 @@ pgalloc()
   if (sz <= addr) return -1;
 
   addr = PGROUNDUP(addr);
-  // allocate phisical pages one by one
-  for (a = addr; a < sz; a += PGSIZE) {
-    mem = kalloc();
-    if (mem == 0) return -2;
-    memset(mem, 0, PGSIZE); // fill with junk
+  // allocate phisical pages one by one, aka. spread by time
+  mem = kalloc();
+  if (mem == 0) return -2;
+  memset(mem, 0, PGSIZE); // fill with junk
 
-    if (mappages(myproc()->pagetable, a, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
-      kfree(mem);
-      return -3;
-    }
+  if (mappages(myproc()->pagetable, addr, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+    kfree(mem);
+    return -3;
   }
 
   return 0;
