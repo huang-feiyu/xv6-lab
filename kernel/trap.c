@@ -15,6 +15,7 @@ extern char trampoline[], uservec[], userret[];
 void kernelvec();
 
 extern int devintr();
+extern int pgalloc();
 
 void
 trapinit(void)
@@ -46,10 +47,10 @@ usertrap(void)
   w_stvec((uint64)kernelvec);
 
   struct proc *p = myproc();
-  
+
   // save user program counter.
   p->trapframe->epc = r_sepc();
-  
+
   if(r_scause() == 8){
     // system call
 
@@ -67,6 +68,16 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 0xf || r_scause() == 0xd){
+    printf("%s page fault: on %p\n", r_scause() == 0xf ? "store" : "load", r_stval());
+    vmprint(p->pagetable);
+    // page allocation
+    if(pgalloc()){
+      printf("pgalloc: allocating page failed\n");
+      p->killed = 1;
+    }
+    printf("page fault: process success\n");
+    vmprint(p->pagetable);
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
@@ -218,3 +229,33 @@ devintr()
   }
 }
 
+/*
+ * pgalloc - lazy allocation to allocate phisical memory to page new
+ *           Huang (c) 2022-09-10
+ */
+int
+pgalloc()
+{
+  char *mem;
+  uint64 a;
+  // REVIEW: will the VA makes addr below VA unvalid?
+  uint64 addr = r_stval();  // VA caused exception
+  uint64 sz = myproc()->sz; // sbrk "has" allocated memory addr
+
+  if (sz <= addr) return -1;
+
+  addr = PGROUNDUP(addr);
+  // allocate phisical pages one by one
+  for (a = addr; a < sz; a += PGSIZE) {
+    mem = kalloc();
+    if (mem == 0) return -2;
+    memset(mem, 0, PGSIZE); // fill with junk
+
+    if (mappages(myproc()->pagetable, a, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+      kfree(mem);
+      return -3;
+    }
+  }
+
+  return 0;
+}

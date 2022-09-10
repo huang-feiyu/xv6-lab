@@ -18,3 +18,6 @@ Just follow the guide. (*Lazy allocation* counts only when there is an *increase
   * 13: *load* page fault caused by a `read()`
   * 15: *store/AMO* page fault cause by a `write()`
 * stval: the address that couldn't be translated
+
+When a page fault ocurs, it will raise trap to allocate physical memory for the
+virtual address stored in `stval`.
