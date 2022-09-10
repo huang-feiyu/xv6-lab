@@ -77,3 +77,7 @@ pgalloc()
 + addr = PGROUNDUP(addr);
 + addr = PGROUNDDOWN(addr);
 ```
+
+### Lazytests and Usertests
+
+Add some error handling code according to the hints.

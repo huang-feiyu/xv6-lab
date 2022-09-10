@@ -245,10 +245,12 @@ pgalloc()
   // Ans: after debugging bug01 & bug00, it is obviously: we only allocate one
   //      page a time, and wherever access to VA, if it is unallocated then
   //      allocate the page it locates.
+  struct proc *p = myproc();
   uint64 addr = r_stval();  // VA caused exception
-  uint64 sz = myproc()->sz; // sbrk "has" allocated memory addr
+  uint64 sz = p->sz; // sbrk "has" allocated memory addr
 
   if (sz <= addr) return -1;
+  if (sz <= p->trapframe->sp) return -4;
 
   addr = PGROUNDDOWN(addr);
   // allocate phisical pages one by one, aka. spread by time
@@ -256,7 +258,7 @@ pgalloc()
   if (mem == 0) return -2;
   memset(mem, 0, PGSIZE); // fill with junk
 
-  if (mappages(myproc()->pagetable, addr, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
+  if (mappages(p->pagetable, addr, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0) {
     kfree(mem);
     return -3;
   }
