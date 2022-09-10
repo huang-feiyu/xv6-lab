@@ -85,3 +85,36 @@ Add some error handling code according to the hints.
 ##### DEBUG
 
 <b>*</b> only sbrkarg FAILED => bug02
+
+`sbrk()` in sbrkarg won't stop. It seems like my allocation doesn't work.
+
+```diff
+uint64
+walkaddr(pagetable_t pagetable, uint64 va)
+{
+  pte_t *pte;
+  uint64 pa;
+
+  if(va >= MAXVA)
+    return 0;
+
+  pte = walk(pagetable, va, 0);
+- if(pte == 0)
+-   return 0;
+- if((*pte & PTE_V) == 0)
+-   return 0;
++ // idea from others
++ if(pte == 0 || (*pte & PTE_V) == 0){
++   if(pgalloc(va)){
++     return 0;
++   }
++   walk(pagetable, va, 0);
++ }
+  if((*pte & PTE_U) == 0)
+    return 0;
+  pa = PTE2PA(*pte);
+  return pa;
+}
+```
+
+TODO: Need an explaination.

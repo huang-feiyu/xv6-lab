@@ -15,7 +15,6 @@ extern char trampoline[], uservec[], userret[];
 void kernelvec();
 
 extern int devintr();
-extern int pgalloc();
 
 void
 trapinit(void)
@@ -74,7 +73,7 @@ usertrap(void)
     vmprint(p->pagetable);
 #endif
     // page allocation
-    if(pgalloc()){
+    if(pgalloc(r_stval())){
 #ifdef DEBUG
       printf("pgalloc: allocating page failed\n");
 #endif
@@ -240,7 +239,7 @@ devintr()
  *           Huang (c) 2022-09-10
  */
 int
-pgalloc()
+pgalloc(uint64 va)
 {
   char *mem;
   // REVIEW: will the VA makes addr below VA unvalid?
@@ -248,7 +247,7 @@ pgalloc()
   //      page a time, and wherever access to VA, if it is unallocated then
   //      allocate the page it locates.
   struct proc *p = myproc();
-  uint64 addr = r_stval();  // VA caused exception
+  uint64 addr = va;  // VA caused exception
   uint64 sz = p->sz; // sbrk "has" allocated memory addr
 
   if (sz <= addr) return -1;

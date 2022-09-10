@@ -101,10 +101,13 @@ walkaddr(pagetable_t pagetable, uint64 va)
     return 0;
 
   pte = walk(pagetable, va, 0);
-  if(pte == 0)
-    return 0;
-  if((*pte & PTE_V) == 0)
-    return 0;
+  // idea from others
+  if(pte == 0 || (*pte & PTE_V) == 0){
+    if(pgalloc(va)){
+      return 0;
+    }
+    walk(pagetable, va, 0);
+  }
   if((*pte & PTE_U) == 0)
     return 0;
   pa = PTE2PA(*pte);
