@@ -75,7 +75,9 @@ usertrap(void)
 #endif
     // page allocation
     if(pgalloc()){
+#ifdef DEBUG
       printf("pgalloc: allocating page failed\n");
+#endif
       p->killed = 1;
     }
 #ifdef DEBUG
@@ -250,7 +252,7 @@ pgalloc()
   uint64 sz = p->sz; // sbrk "has" allocated memory addr
 
   if (sz <= addr) return -1;
-  if (sz <= p->trapframe->sp) return -4;
+  if (addr < p->trapframe->sp) return -4;
 
   addr = PGROUNDDOWN(addr);
   // allocate phisical pages one by one, aka. spread by time
