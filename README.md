@@ -27,8 +27,8 @@ virtual address stored in `stval`.
 <b>*</b> map too soon => bug00
 
 ```diff
--  // allocate phisical pages one by one
 +  // allocate phisical pages one by one, aka. spread by time
+-  // allocate phisical pages one by one
 -  for (a = addr; a < sz; a += PGSIZE) {
      mem = kalloc();
      if (mem == 0) return -2;
@@ -74,7 +74,7 @@ pgalloc()
 
   if (sz <= addr) return -1;
 
-+ addr = PGROUNDUP(addr);
+- addr = PGROUNDUP(addr);
 + addr = PGROUNDDOWN(addr);
 ```
 
