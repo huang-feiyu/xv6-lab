@@ -499,14 +499,14 @@ pagetable_t
 pvminit()
 {
 #ifdef DEBUG
-  printf("uvmkptinit: produce a kpt\n");
+  printf("pvminit: produce a kpt\n");
 #endif
   pagetable_t kpt = (pagetable_t) kalloc();
   if (kpt == 0) panic("uvmkptinit: kalloc failed");
   memset(kpt, 0, PGSIZE);
 
 #ifdef DEBUG
-  printf("uvmkptinit: start mapping\n");
+  printf("pvminit: start mapping\n");
 #endif
 
   // uart registers

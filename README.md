@@ -27,3 +27,5 @@ carefully, it helps a lot.
 <b>*</b> panic: remap => bug01
 
 Remap kernel_pagetable init memory, add a `pvmmap()`.
+
+<b>*</b> panic: kvmpa => bug02
