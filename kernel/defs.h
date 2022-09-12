@@ -181,6 +181,7 @@ int             copyinstr(pagetable_t, char *, uint64, uint64);
 int             test_pagetable();
 void            vmprint(pagetable_t);
 pagetable_t     uvmkptinit();
+void            uvmkptfree(pagetable_t);
 
 // plic.c
 void            plicinit(void);

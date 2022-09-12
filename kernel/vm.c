@@ -520,3 +520,24 @@ uvmkptinit()
 
   return kpt;
 }
+
+/*
+ * uvmkptfree - free process's kernel page table
+ *              Huang (c) 2022-09-12
+ */
+void
+uvmkptfree(pagetable_t kpt)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = kpt[i];
+    if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
+      // free child, then parent; bottom to up
+      uint64 child = PTE2PA(pte);
+      freeprockpt((pagetable_t)child);
+      kpt[i] = 0;
+    } else if(pte & PTE_V){ // leaf
+      kpt[i] = 0;
+    }
+  }
+  kfree((void*)kpt);
+}

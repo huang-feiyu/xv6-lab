@@ -17,4 +17,5 @@ carefully, it helps a lot.
   * Create kpt via modified `kvminit()`, call it in `allocproc()`
   * Map kernel stack to process's kpt<br/>
     Allocate memory in `procinit()`, map in `allocproc()`
+  * Free kpt in `freeproc()`
 2. Change kernel page table while switching processes
