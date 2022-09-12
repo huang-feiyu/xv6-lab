@@ -15,4 +15,6 @@ carefully, it helps a lot.
 
 1. Maintain a sperated kernel page table per process
   * Create kpt via modified `kvminit()`, call it in `allocproc()`
+  * Map kernel stack to process's kpt<br/>
+    Allocate memory in `procinit()`, map in `allocproc()`
 2. Change kernel page table while switching processes
