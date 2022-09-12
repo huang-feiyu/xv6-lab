@@ -5,6 +5,8 @@
 #include "riscv.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "proc.h"
 
 /*
  * the kernel's page table.
@@ -132,7 +134,7 @@ kvmpa(uint64 va)
   pte_t *pte;
   uint64 pa;
   
-  pte = walk(kernel_pagetable, va, 0);
+  pte = walk(myproc()->kpagetable, va, 0);
   if(pte == 0)
     panic("kvmpa");
   if((*pte & PTE_V) == 0)
@@ -498,16 +500,9 @@ pvmmap(pagetable_t kpt, uint64 va, uint64 pa, uint64 sz, int perm)
 pagetable_t
 pvminit()
 {
-#ifdef DEBUG
-  printf("pvminit: produce a kpt\n");
-#endif
   pagetable_t kpt = (pagetable_t) kalloc();
-  if (kpt == 0) panic("uvmkptinit: kalloc failed");
+  if (kpt == 0) panic("pvminit: kalloc failed");
   memset(kpt, 0, PGSIZE);
-
-#ifdef DEBUG
-  printf("pvminit: start mapping\n");
-#endif
 
   // uart registers
   pvmmap(kpt, UART0, UART0, PGSIZE, PTE_R | PTE_W);
@@ -531,10 +526,6 @@ pvminit()
   // map the trampoline for trap entry/exit to
   // the highest virtual address in the kernel.
   pvmmap(kpt, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
-
-#ifdef DEBUG
-  printf("uvmkptinit: end mapping\n");
-#endif
 
   return kpt;
 }

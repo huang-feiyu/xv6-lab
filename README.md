@@ -29,3 +29,17 @@ carefully, it helps a lot.
 Remap kernel_pagetable init memory, add a `pvmmap()`.
 
 <b>*</b> panic: kvmpa => bug02
+
+Something goes wrong after `scheduler()` switched the context.
+
+```diff
+uint64
+kvmpa(uint64 va)
+{
+  uint64 off = va % PGSIZE;
+  pte_t *pte;
+  uint64 pa;
+
++ pte = walk(myproc()->kpagetable, va, 0);
+- pte = walk(kernel_pagetable, va, 0);
+```
