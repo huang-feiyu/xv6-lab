@@ -21,3 +21,9 @@ carefully, it helps a lot.
 2. Change kernel page table while switching processes
   * Modify `scheduler()` to load process's kpt into `satp` register
   * `scheduler()` should use `kernel_pagetable` when no process is running
+
+### Debug
+
+<b>*</b> panic: remap => bug01
+
+Remap kernel_pagetable init memory, add a `pvmmap()`.

@@ -112,7 +112,7 @@ found:
   }
 
   // Kernel page table
-  p->kpagetable = uvmkptinit();
+  p->kpagetable = pvminit();
 
   // Map a page for kernel stack
   uint64 pa = p->kstack;
@@ -149,7 +149,7 @@ freeproc(struct proc *p)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
   if(p->kpagetable)
-    uvmkptfree(p->kpagetable);
+    pvmfree(p->kpagetable);
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;

@@ -484,56 +484,74 @@ vmprint(pagetable_t pgtbl)
   vmprintr(pgtbl, 0);
 }
 
+void
+pvmmap(pagetable_t kpt, uint64 va, uint64 pa, uint64 sz, int perm)
+{
+  if(mappages(kpt, va, sz, pa, perm) != 0)
+    panic("pvmmap");
+}
+
 /*
- * uvmkptinit - produce a kernel page table for a new process
- *              Huang (c) 2022-09-12
+ * pvminit - produce a kernel page table for a new process
+ *           Huang (c) 2022-09-12
  */
 pagetable_t
-uvmkptinit()
+pvminit()
 {
+#ifdef DEBUG
+  printf("uvmkptinit: produce a kpt\n");
+#endif
   pagetable_t kpt = (pagetable_t) kalloc();
   if (kpt == 0) panic("uvmkptinit: kalloc failed");
   memset(kpt, 0, PGSIZE);
 
+#ifdef DEBUG
+  printf("uvmkptinit: start mapping\n");
+#endif
+
   // uart registers
-  kvmmap(UART0, UART0, PGSIZE, PTE_R | PTE_W);
+  pvmmap(kpt, UART0, UART0, PGSIZE, PTE_R | PTE_W);
 
   // virtio mmio disk interface
-  kvmmap(VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+  pvmmap(kpt, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
 
   // CLINT: do NOT map to avoid virtual address overlapping
   // NOTE: User addr space: 0x0 - 0xc000000, CLINT is less than 0xc000000
   // kvmmap(CLINT, CLINT, 0x10000, PTE_R | PTE_W);
 
   // PLIC
-  kvmmap(PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+  pvmmap(kpt, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
 
   // map kernel text executable and read-only.
-  kvmmap(KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
+  pvmmap(kpt, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
 
   // map kernel data and the physical RAM we'll make use of.
-  kvmmap((uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
+  pvmmap(kpt, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
 
   // map the trampoline for trap entry/exit to
   // the highest virtual address in the kernel.
-  kvmmap(TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+  pvmmap(kpt, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+
+#ifdef DEBUG
+  printf("uvmkptinit: end mapping\n");
+#endif
 
   return kpt;
 }
 
 /*
- * uvmkptfree - free process's kernel page table
- *              Huang (c) 2022-09-12
+ * pvmfree - free process's kernel page table
+ *           Huang (c) 2022-09-12
  */
 void
-uvmkptfree(pagetable_t kpt)
+pvmfree(pagetable_t kpt)
 {
   for(int i = 0; i < 512; i++){
     pte_t pte = kpt[i];
     if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
       // free child, then parent; bottom to up
       uint64 child = PTE2PA(pte);
-      uvmkptfree((pagetable_t)child);
+      pvmfree((pagetable_t)child);
       kpt[i] = 0;
     } else if(pte & PTE_V){ // leaf
       kpt[i] = 0;
