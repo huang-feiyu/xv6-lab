@@ -450,3 +450,36 @@ test_pagetable()
   uint64 gsatp = MAKE_SATP(kernel_pagetable);
   return satp != gsatp;
 }
+
+void
+vmprintr(pagetable_t pgtbl, int depth)
+{
+  if (depth > 2) panic("vmprintr: depth > 2");
+  char indicates[][16] = {
+    [0] "||",
+    [1] "|| ||",
+    [2] "|| || ||",
+  };
+  // 512 PTEs in a page table
+  for (int i = 0; i < 512; i++) {
+    pte_t pte = pgtbl[i];
+    if (pte & PTE_V) {
+      uint64 pa = PTE2PA(pte);
+      printf("%s%d: pte %p pa %p\n", indicates[depth], i, pte, pa);
+      pagetable_t child = (pagetable_t)pa;
+      if (depth < 2) vmprintr(child, depth + 1);
+    }
+  }
+}
+
+/*
+ * vmprint - print the contents of a page table
+ *           Huang (c) 2022-09-12
+ */
+void
+vmprint(pagetable_t pgtbl)
+{
+  printf("page table %p\n", pgtbl);
+  // recuresively print
+  vmprintr(pgtbl, 0);
+}
