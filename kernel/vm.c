@@ -483,3 +483,40 @@ vmprint(pagetable_t pgtbl)
   // recuresively print
   vmprintr(pgtbl, 0);
 }
+
+/*
+ * uvmkptinit - produce a kernel page table for a new process
+ *              Huang (c) 2022-09-12
+ */
+pagetable_t
+uvmkptinit()
+{
+  pagetable_t kpt = (pagetable_t) kalloc();
+  if (kpt == 0) panic("uvmkptinit: kalloc failed");
+  memset(kpt, 0, PGSIZE);
+
+  // uart registers
+  kvmmap(UART0, UART0, PGSIZE, PTE_R | PTE_W);
+
+  // virtio mmio disk interface
+  kvmmap(VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+
+  // CLINT: do NOT map to avoid virtual address overlapping
+  // NOTE: User addr space: 0x0 - 0xc000000, CLINT is less than 0xc000000
+  // kvmmap(CLINT, CLINT, 0x10000, PTE_R | PTE_W);
+
+  // PLIC
+  kvmmap(PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+
+  // map kernel text executable and read-only.
+  kvmmap(KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
+
+  // map kernel data and the physical RAM we'll make use of.
+  kvmmap((uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
+
+  // map the trampoline for trap entry/exit to
+  // the highest virtual address in the kernel.
+  kvmmap(TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+
+  return kpt;
+}

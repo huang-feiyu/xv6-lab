@@ -113,6 +113,9 @@ found:
     return 0;
   }
 
+  // Kernel page table
+  p->kpagetable = uvmkptinit();
+
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
