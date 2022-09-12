@@ -479,6 +479,9 @@ scheduler(void)
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
+        // Change kernel page table
+        w_satp(MAKE_SATP(p->kpagetable));
+        sfence_vma();
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.
@@ -496,6 +499,7 @@ scheduler(void)
     }
 #if !defined (LAB_FS)
     if(found == 0) {
+      kvminithart(); // use kernel_pagetable when no process is running
       intr_on();
       asm volatile("wfi");
     }

@@ -19,3 +19,5 @@ carefully, it helps a lot.
     Allocate memory in `procinit()`, map in `allocproc()`
   * Free kpt in `freeproc()`
 2. Change kernel page table while switching processes
+  * Modify `scheduler()` to load process's kpt into `satp` register
+  * `scheduler()` should use `kernel_pagetable` when no process is running
