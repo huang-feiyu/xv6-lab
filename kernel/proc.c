@@ -37,7 +37,7 @@ procinit(void)
       char *pa = kalloc();
       if(pa == 0)
         panic("kalloc");
-      p->kstack = (uint64)pa; // temporarily store in kstack
+      p->kstackpa = (uint64)pa;
   }
   kvminithart();
 }
@@ -115,7 +115,7 @@ found:
   p->kpagetable = pvminit();
 
   // Map a page for kernel stack
-  uint64 pa = p->kstack;
+  uint64 pa = p->kstackpa;
   uint64 va = KSTACK((int) (p - proc));
   // create mapping in kernel page table
   if(mappages(p->kpagetable, va, PGSIZE, pa, PTE_R | PTE_W) != 0)
@@ -129,6 +129,11 @@ found:
     release(&p->lock);
     return 0;
   }
+#ifdef DEBUG
+  printf("allocproc:\n");
+  vmprint(p->pagetable);
+  printf("\n");
+#endif
 
   // Set up new context to start executing at forkret,
   // which returns to user space.

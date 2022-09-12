@@ -43,3 +43,36 @@ kvmpa(uint64 va)
 + pte = walk(myproc()->kpagetable, va, 0);
 - pte = walk(kernel_pagetable, va, 0);
 ```
+
+<b>*</b> user program can only be executed once => bug03
+
+Stuck at after `fork(void)`. I don't know why the order counts, but it works...
+I think it is the kernel allocate the **same** process twice. The stack hasn't
+been freed, which makes the 2nd `p->kstack` a wrong address.
+
+```diff
+procinit(void) {
+  // code...
+-      char *pa = kalloc();
+-      if(pa == 0)
+-        panic("kalloc");
+-      p->kstack = (uint64)pa; // temporarily store in kstack
+   }
+   kvminithart();
+}
+
+---
+
+  // Map a page for kernel stack
+-  uint64 pa = p->kstack;
++  char *pa = kalloc();
++  if(pa == 0) panic("kalloc");
+   uint64 va = KSTACK((int) (p - proc));
+-  if(mappages(p->kpagetable, va, PGSIZE, pa, PTE_R | PTE_W) != 0)
++  if(mappages(p->kpagetable, va, PGSIZE, (uint64)pa, PTE_R | PTE_W) != 0)
+     panic("allocproc: kernel stack mappages failed");
+   p->kstack = va;
+```
+
+Another way to do this: maintain a `kstackpa` in `struct proc` to avoid freeing
+kernel stack in `freeproc()`
