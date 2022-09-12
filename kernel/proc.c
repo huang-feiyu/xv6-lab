@@ -37,7 +37,7 @@ procinit(void)
       char *pa = kalloc();
       if(pa == 0)
         panic("kalloc");
-      p->kstack = pa; // temporarily store in kstack
+      p->kstack = (uint64)pa; // temporarily store in kstack
   }
   kvminithart();
 }
@@ -115,7 +115,7 @@ found:
   p->kpagetable = uvmkptinit();
 
   // Map a page for kernel stack
-  char *pa = p->kstack;
+  uint64 pa = p->kstack;
   uint64 va = KSTACK((int) (p - proc));
   // create mapping in kernel page table
   if(mappages(p->kpagetable, va, PGSIZE, pa, PTE_R | PTE_W) != 0)

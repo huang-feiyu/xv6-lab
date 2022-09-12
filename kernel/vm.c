@@ -533,7 +533,7 @@ uvmkptfree(pagetable_t kpt)
     if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
       // free child, then parent; bottom to up
       uint64 child = PTE2PA(pte);
-      freeprockpt((pagetable_t)child);
+      uvmkptfree((pagetable_t)child);
       kpt[i] = 0;
     } else if(pte & PTE_V){ // leaf
       kpt[i] = 0;
