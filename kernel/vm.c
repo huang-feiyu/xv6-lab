@@ -412,6 +412,9 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 int
 copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 {
+#ifdef NEW
+  return copyinstr_new(pagetable, dst, srcva, max);
+#else
   uint64 n, va0, pa0;
   int got_null = 0;
 
@@ -446,6 +449,7 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
   } else {
     return -1;
   }
+#endif
 }
 
 // check if use global kpgtbl or not 

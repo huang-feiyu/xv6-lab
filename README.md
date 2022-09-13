@@ -92,3 +92,7 @@ page table like `uvmcopy()`.
 scause 5: Load access fault
 
 The bug disappeared, it is weird.
+
+<b>*</b> bigdir failed => bug05
+
+bigdir link(bd, x4Z) failed, but `make grade` got full credits.

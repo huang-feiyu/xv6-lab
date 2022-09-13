@@ -234,5 +234,5 @@ void            sockrecvudp(struct mbuf*, uint32, uint16, uint16);
 #endif
 
 #define NEW
-#define DEBUG
+// #define DEBUG
 // #define VERBOSE
