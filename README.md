@@ -136,3 +136,12 @@ growproc(int n)
 ```
 
 Pass all the tests.
+
+---
+
+```
+Time:   11 Hours
+Score:  100/100
+Author: Huang
+Date:   2022-09-13
+```
