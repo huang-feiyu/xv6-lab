@@ -382,6 +382,9 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 int
 copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
 {
+#ifdef NEW
+  return copyin_new(pagetable, dst, srcva, len);
+#else
   uint64 n, va0, pa0;
 
   while(len > 0){
@@ -399,6 +402,7 @@ copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len)
     srcva = va0 + PGSIZE;
   }
   return 0;
+#endif
 }
 
 // Copy a null-terminated string from user to kernel.
@@ -549,4 +553,39 @@ pvmfree(pagetable_t kpt)
     }
   }
   kfree((void*)kpt);
+}
+
+/*
+ * pvmcopy - copy user page table to kernel page table, from s to e
+ *           Huang (c) 2022-09-13
+ */
+void
+pvmcopy(pagetable_t upt, pagetable_t kpt, uint64 s, uint64 e)
+{
+  pte_t *pte, *kpte;
+
+  if(e > PLIC) panic("pvmcopy: overflow");
+
+  for(uint64 i = PGROUNDUP(s); i < e; i += PGSIZE){
+    if((pte = walk(upt, i, 0)) == 0)
+      panic("kvmcopy: pte should exist");
+    if((*pte & PTE_V) == 0)
+      panic("kvmcopy: page not present");
+    if((kpte = walk(kpt, i, 1)) == 0)
+      panic("kvmcopy: walk");
+
+    *kpte = *pte & ~PTE_U;
+  }
+
+#ifdef DEBUG
+  printf("pvmcopy: user page table\n");
+  vmprint(upt);
+  printf("\n");
+#ifdef VERBOSE
+  printf("pvmcopy: kernel page table\n");
+  vmprint(kpt);
+  printf("\n");
+#endif
+#endif
+
 }

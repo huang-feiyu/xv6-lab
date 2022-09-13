@@ -76,3 +76,19 @@ procinit(void) {
 
 Another way to do this: maintain a `kstackpa` in `struct proc` to avoid freeing
 kernel stack in `freeproc()`
+
+## Simplify `copyin`/`copyinstr`
+
+Add user page table mapping to kernel page table. Just copy the PTEs to kernel
+page table like `uvmcopy()`.
+
+* Update `userinit()` kernel page table
+* Where kernel changes a process's user page table mapping, change the kernel too
+
+### Debug
+
+<b>*</b> panic: kerneltrap => bug04
+
+scause 5: Load access fault
+
+The bug disappeared, it is weird.
