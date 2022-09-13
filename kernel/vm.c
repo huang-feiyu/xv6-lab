@@ -593,3 +593,20 @@ pvmcopy(pagetable_t upt, pagetable_t kpt, uint64 s, uint64 e)
 #endif
 
 }
+
+
+/*
+ * pvmclr - clr the dicarded user PTEs of kpt, from s to e
+ *          Huang (c) 2022-09-13
+ */
+void
+pvmclr(pagetable_t kpt, uint64 s, uint64 e)
+{
+  pte_t *pte;
+
+  for(uint64 i = PGROUNDUP(s); i < e; i += PGSIZE){
+    if((pte = walk(kpt, i, 0)) == 0)
+      panic("uvmclear: walk");
+    *pte = 0;
+  }
+}

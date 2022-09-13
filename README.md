@@ -96,3 +96,43 @@ The bug disappeared, it is weird.
 <b>*</b> bigdir failed => bug05
 
 bigdir link(bd, x4Z) failed, but `make grade` got full credits.
+
+In the end, I look up to web and find that when upt remove some PTEs, kpt need
+also to remove their mappings.
+
+```diff
++ void
++ pvmclr(pagetable_t kpt, uint64 s, uint64 e)
++ {
++   pte_t *pte;
++   for(uint64 i = PGROUNDUP(s); i < e; i += PGSIZE){
++     if((pte = walk(kpt, i, 0)) == 0)
++       panic("uvmclear: walk");
++     *pte = 0;
++   }
++ }
+
+---
+
+int
+growproc(int n)
+{
+  uint sz;
+  struct proc *p = myproc();
+
+  sz = p->sz;
+  if(n > 0){
+    if((sz = uvmalloc(p->pagetable, sz, sz + n)) == 0) {
+      return -1;
+    }
+    pvmcopy(p->pagetable, p->kpagetable, p->sz, p->sz + n);
+  } else if(n < 0){
+    sz = uvmdealloc(p->pagetable, sz, sz + n);
++   pvmclr(p->kpagetable, p->sz + n, p->sz);
+  }
+  p->sz = sz;
+  return 0;
+}
+```
+
+Pass all the tests.

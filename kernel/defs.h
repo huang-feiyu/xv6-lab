@@ -183,6 +183,7 @@ void            vmprint(pagetable_t);
 pagetable_t     pvminit();
 void            pvmfree(pagetable_t);
 void            pvmcopy(pagetable_t, pagetable_t, uint64, uint64);
+void            pvmclr(pagetable_t, uint64, uint64);
 
 // vmcopyin.c
 int             copyin_new(pagetable_t, char *, uint64, uint64);

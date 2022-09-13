@@ -269,6 +269,7 @@ growproc(int n)
     pvmcopy(p->pagetable, p->kpagetable, p->sz, p->sz + n);
   } else if(n < 0){
     sz = uvmdealloc(p->pagetable, sz, sz + n);
+    pvmclr(p->kpagetable, p->sz + n, p->sz);
   }
   p->sz = sz;
   return 0;
