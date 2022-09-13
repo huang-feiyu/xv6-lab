@@ -108,7 +108,7 @@ walkaddr(pagetable_t pagetable, uint64 va)
 +   if(pgalloc(va)){
 +     return 0;
 +   }
-+   walk(pagetable, va, 0);
++   pte = walk(pagetable, va, 0);
 + }
   if((*pte & PTE_U) == 0)
     return 0;
