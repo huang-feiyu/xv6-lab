@@ -40,3 +40,15 @@ Starting xv6:
 5. `main` initializes several devices and subsystem. It creates the first process
    by calling `userinit` -> `initcode` -> `ecall` -> `sys_exec` -> `/init`
 
+---
+
+MIT 6.S081 Lecture 2:
+* 操作系统应该具有防御性(Defensive)
+* 内核有时候也被称为可被信任的计算空间(Trusted Computing Base, TCB)
+* QEMU main loop: Maintain states of registers
+    * 读取4字节或者8字节的RISC-V指令。
+    * 解析RISC-V指令，并找出对应的操作码(op code)。我们之前在看kernel.asm的时候,
+      看过一些操作码的二进制版本。通过解析，或许可以知道这是一个ADD指令，或者是一个SUB指令。
+    * 之后，在软件中执行相应的指令。
+* userinit有点像是胶水代码/Glue code(胶水代码不实现具体的功能，只是为了适配不同的部分而存在)
+

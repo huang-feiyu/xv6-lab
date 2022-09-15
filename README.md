@@ -7,6 +7,7 @@
 * [HIT: labs](https://hitsz-cslab.gitee.io/os-labs/)
 * [MIT: labs](https://pdos.csail.mit.edu/6.S081/2020/labs/)
 * [csdiy: 6.S081](https://csdiy.wiki/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/MIT6.S081/)
+* [课程中文翻译](https://mit-public-courses-cn-translatio.gitbook.io/mit6-s081)
 
 ## Notes
 
