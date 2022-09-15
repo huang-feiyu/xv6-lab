@@ -12,7 +12,7 @@ initcode
 initcode.out
 kernelmemfs
 kernel/kernel
-mkfs
+mkfs/mkfs
 user/usys.S
 .gdbinit
 myapi.key
