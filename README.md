@@ -15,7 +15,7 @@
 * [Chapter 2](./Notes/Note02.md): Operating system Organization
 * [Chapter 3](./Notes/Note03.md): Page Tables
 * [Chapter 4](./Notes/Note04.md): Traps and system calls
-* [Chapter 5](./Notes/Note05.md): Chapter 5
+* [Chapter 5](./Notes/Note05.md): Interrupts and device drivers
 
 ## Implementation
 
