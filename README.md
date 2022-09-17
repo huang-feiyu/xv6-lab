@@ -16,6 +16,7 @@
 * [Chapter 3](./Notes/Note03.md): Page Tables
 * [Chapter 4](./Notes/Note04.md): Traps and system calls
 * [Chapter 5](./Notes/Note05.md): Interrupts and device drivers
+* [Chapter 8](./Notes/Note08.md): File System
 
 ## Implementation
 
