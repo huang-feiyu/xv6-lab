@@ -14,10 +14,14 @@
   * 同步访问磁盘块，以确保磁盘块在内存中只有一个buffer缓存，并且一次只有一个内核线程能使用该buffer缓存
   * 缓存使用较多的块，这样它们就不需要从慢速磁盘中重新读取
 * Logging Layer: TODO:
-* Inode Layer
+* Inode Layer (Read the code...)
   * 指的是磁盘上的数据结构，其中包含了文件的大小和数据块号的列表
   * 指的是内存中的 inode，它包含了磁盘上 inode 的副本以及内核中需要的其他信息。
-* TODO:
+* File Descriptor Layer
+  * Each open file is represented by a struct file (kernel/file.h:1), which is a
+    wrapper around either an inode or a pipe, plus an I/O offset.
+  * most resources in Unix are represented as files, including devices such as
+    the console, pipes, and of course, real files
 
 ---
 
@@ -37,5 +41,4 @@ MIT Lecture 14:
   * 一个目录本质上是一个文件加上一些文件系统能够理解的结构
   * 一个目录包含了directory entries: 前两个字节为文件或子目录inode编号，后14字节为文件或子目录名
 * mkfs: 创建了一个包含一些文件的新的文件系统/磁盘镜像
-TODO:
 
