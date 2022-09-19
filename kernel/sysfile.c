@@ -337,7 +337,7 @@ sys_open(void)
       }
       iunlockput(ip);
 
-      if((ip = namei(path)) != 0){
+      if((ip = namei(path)) == 0){
         end_op();
         return -1;
       }

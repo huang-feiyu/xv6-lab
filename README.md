@@ -13,3 +13,4 @@ Just do stuff like indirect block twice, it is fairly easy to implement.
 
 Add one more syscall `symlink`.
 
+I solved many bugs, most of them were not worth to record.
