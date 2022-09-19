@@ -322,6 +322,38 @@ sys_open(void)
     return -1;
   }
 
+  // find target according to symlink
+  if(ip->type == T_SYMLINK && omode != O_NOFOLLOW){
+    int cnt = 0;
+    do {
+      memset(path, 0, MAXPATH);
+      if(readi(ip, 0, (uint64)path, 0, MAXPATH) != MAXPATH){
+        iunlockput(ip);
+        end_op();
+        return -1;
+      }
+      iunlockput(ip);
+
+      if((ip = namei(path)) != 0){
+        end_op();
+        return -1;
+      }
+
+      ilock(ip);
+      if(ip->type == T_SYMLINK && omode != O_NOFOLLOW){
+        cnt++;
+        continue;
+      }
+      break;
+    } while (cnt <= 10);
+
+    if(cnt > 10){
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+  }
+
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
     if(f)
       fileclose(f);
@@ -486,11 +518,30 @@ sys_pipe(void)
 }
 
 /*
- * sys_symlink - soft link target to path
+ * sys_symlink - reates a symbolic `link` which contains string `target`
+ *             - Huang (c) 2022-09-19
  */
 uint64
 sys_symlink(void)
 {
-  printf("symlink: Not implemented\n");
+  // symlink(target, linkpath)
+  char target[MAXPATH], linkpath[MAXPATH];
+  struct inode *ip;
+
+  begin_op();
+  if((ip = create(linkpath, T_SYMLINK, 0, 0)) == 0){
+    end_op();
+    return -1;
+  }
+
+  // store target to where va = 0
+  if(wrieti(ip, 0, (uint64)target, 0, MAXPATH) != MAXPATH){
+    end_op();
+    return -1;
+  }
+  iput(ip);
+
+  end_op();
+
   return 0;
 }
