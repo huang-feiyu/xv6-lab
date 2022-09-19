@@ -323,10 +323,13 @@ sys_open(void)
   }
 
   // find target according to symlink
-  if(ip->type == T_SYMLINK && omode != O_NOFOLLOW){
+  if(ip->type == T_SYMLINK && !(omode & O_NOFOLLOW)){
+#ifdef DEBUG
+      printf("open: symlink find start\n");
+#endif
     int cnt = 0;
     do {
-      memset(path, 0, MAXPATH);
+      memset(path, 0, sizeof(path));
       if(readi(ip, 0, (uint64)path, 0, MAXPATH) != MAXPATH){
         iunlockput(ip);
         end_op();
@@ -340,7 +343,7 @@ sys_open(void)
       }
 
       ilock(ip);
-      if(ip->type == T_SYMLINK && omode != O_NOFOLLOW){
+      if(ip->type == T_SYMLINK){
         cnt++;
         continue;
       }
@@ -352,6 +355,9 @@ sys_open(void)
       end_op();
       return -1;
     }
+#ifdef DEBUG
+      printf("open: symlink find end\n");
+#endif
   }
 
   if((f = filealloc()) == 0 || (fd = fdalloc(f)) < 0){
@@ -524,24 +530,42 @@ sys_pipe(void)
 uint64
 sys_symlink(void)
 {
+#ifdef DEBUG
+  printf("symlink: start\n");
+#endif
+
   // symlink(target, linkpath)
   char target[MAXPATH], linkpath[MAXPATH];
   struct inode *ip;
 
+  if(argstr(0, target, MAXPATH) < 0 || argstr(1, linkpath, MAXPATH) < 0)
+    return -1;
+
   begin_op();
   if((ip = create(linkpath, T_SYMLINK, 0, 0)) == 0){
+#ifdef DEBUG
+    printf("symlink: [error] create linkpath\n");
+#endif
     end_op();
     return -1;
   }
 
   // store target to where va = 0
-  if(wrieti(ip, 0, (uint64)target, 0, MAXPATH) != MAXPATH){
+  // ilock(ip);
+  if(writei(ip, 0, (uint64)target, 0, MAXPATH) != MAXPATH){
+#ifdef DEBUG
+    printf("symlink: [error] write to linkpath\n");
+#endif
     end_op();
     return -1;
   }
-  iput(ip);
+  iunlockput(ip);
 
   end_op();
+
+#ifdef DEBUG
+  printf("symlink: end\n");
+#endif
 
   return 0;
 }
