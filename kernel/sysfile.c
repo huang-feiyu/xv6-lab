@@ -484,3 +484,13 @@ sys_pipe(void)
   }
   return 0;
 }
+
+/*
+ * sys_symlink - soft link target to path
+ */
+uint64
+sys_symlink(void)
+{
+  printf("symlink: Not implemented\n");
+  return 0;
+}

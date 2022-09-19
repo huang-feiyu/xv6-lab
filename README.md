@@ -8,3 +8,8 @@
 Change one direct block to doubly-direct block.
 
 Just do stuff like indirect block twice, it is fairly easy to implement.
+
+## symbolic link
+
+Add one more syscall `symlink`.
+
