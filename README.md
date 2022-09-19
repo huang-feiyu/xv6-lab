@@ -24,4 +24,5 @@
 * [syscall](https://github.com/huang-feiyu/xv6-lab/tree/syscall): **35/35**
 * [pgtbl](https://github.com/huang-feiyu/xv6-lab/tree/pgtbl): **100/100**
 * [lazy](https://github.com/huang-feiyu/xv6-lab/tree/lazy): **119/119**
+* [fs](https://github.com/huang-feiyu/xv6-lab/tree/fs): **100/100**
 
