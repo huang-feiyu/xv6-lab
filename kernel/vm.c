@@ -432,3 +432,30 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+void
+vmprintr(pagetable_t pgtbl, int level)
+{
+  static char *prefix[] = {"..", ".. ..", ".. .. .."};
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pgtbl[i];
+    if(pte & PTE_V){
+      uint64 pa = PTE2PA(pte);
+      printf("%s%d: pte %p pa %p\n", prefix[level], i, pte, pa);
+      if((pte & (PTE_R|PTE_W|PTE_X)) == 0){
+        vmprintr((pagetable_t)pa, level+1);
+      }
+    }
+  }
+}
+
+/*
+ * vmprint - print page table in 3-level
+ *         - Huang (c) 2022-09-20
+ */
+void
+vmprint(pagetable_t pgtbl)
+{
+  printf("page table %p\n", pgtbl);
+  vmprintr(pgtbl, 0);
+}
