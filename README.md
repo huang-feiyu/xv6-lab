@@ -11,3 +11,7 @@ It's fairly easy to implement.
 ## Print a page table
 
 Follow the guide, then done.
+
+## Detecting which pages have been accessed
+
+Implement a syscall `pgaccess()`, it is easy too.
