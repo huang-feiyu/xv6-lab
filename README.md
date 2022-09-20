@@ -15,3 +15,12 @@ Follow the guide, then done.
 ## Detecting which pages have been accessed
 
 Implement a syscall `pgaccess()`, it is easy too.
+
+---
+
+```
+Time:   4 Hours
+Score:  46/46
+Author: Huang
+Date:   2022-09-20
+```
