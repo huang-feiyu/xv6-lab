@@ -99,13 +99,24 @@ sys_uptime(void)
 }
 
 /**
- * sys_sigalarm - TODO:
+ * sys_sigalarm - Install an alarm signal handler to proc
  *              - Huang (c) 2022-09-21
  */
 uint64
 sys_sigalarm(void)
 {
-  printf("Not implemented\n");
+  int ticks;
+  uint64 hdlr;
+
+  if(argint(0, &ticks) < 0 || argaddr(1, &hdlr) < 0)
+    return -1;
+  if(ticks < 0) return -1;
+
+  struct proc *p = myproc();
+  p->alarmticks = ticks;
+  p->alarmhdlr = hdlr;
+  p->duration = 0;
+
   return 0;
 }
 
