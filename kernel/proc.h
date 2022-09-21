@@ -106,4 +106,5 @@ struct proc {
   int duration;                // ticks since last call
   int alarmticks;              // Alarm interval
   uint64 alarmhdlr;            // Alarm handler address
+  struct trapframe *alarmtf;   // data page for alarm handler
 };

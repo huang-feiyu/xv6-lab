@@ -81,6 +81,8 @@ usertrap(void)
     if(p->alarmticks != 0){
       p->duration++;
       if(p->duration == p->alarmticks){
+        // store current context
+        *p->alarmtf = *p->trapframe;
         p->trapframe->epc = p->alarmhdlr;
         p->duration = 0;
       }

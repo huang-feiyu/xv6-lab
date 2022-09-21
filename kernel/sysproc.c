@@ -121,12 +121,18 @@ sys_sigalarm(void)
 }
 
 /**
- * sys_sigreturn - TODO:
+ * sys_sigreturn - Restore process context when handler returns
  *               - Huang (c) 2022-09-21
  */
 uint64
 sys_sigreturn(void)
 {
-  printf("Not implemented\n");
+  struct proc *p = myproc();
+  if(p->alarmticks == 0)
+    return -1;
+
+  // restore trapframe
+  *p->trapframe = *p->alarmtf;
+
   return 0;
 }
