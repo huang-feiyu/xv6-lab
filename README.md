@@ -31,3 +31,12 @@ test2
 ```
 
 It is fairly easy to implement.
+
+---
+
+```
+Time:   3 Hours
+Score:  85/85
+Author: Huang
+Date:   2022-09-21
+```
