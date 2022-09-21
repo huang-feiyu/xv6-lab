@@ -6,3 +6,7 @@
 ## Backtrace
 
 Just follow the guide, print ret addr first, then update to prev frame pointer.
+
+## Alarm
+
+Add a syscall in xv6 to periodically alert a process as it uses CPU time.

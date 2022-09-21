@@ -97,3 +97,25 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+/**
+ * sys_sigalarm - TODO:
+ *              - Huang (c) 2022-09-21
+ */
+uint64
+sys_sigalarm(void)
+{
+  printf("Not implemented\n");
+  return 0;
+}
+
+/**
+ * sys_sigreturn - TODO:
+ *               - Huang (c) 2022-09-21
+ */
+uint64
+sys_sigreturn(void)
+{
+  printf("Not implemented\n");
+  return 0;
+}
