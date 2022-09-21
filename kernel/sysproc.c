@@ -131,8 +131,9 @@ sys_sigreturn(void)
   if(p->alarmticks == 0)
     return -1;
 
-  // restore trapframe
-  *p->trapframe = *p->alarmtf;
+  *p->trapframe = *p->alarmtf; // restore trapframe
+
+  p->duration = 0; // avoid re-entrant
 
   return 0;
 }

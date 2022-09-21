@@ -80,11 +80,11 @@ usertrap(void)
   if(which_dev == 2){
     if(p->alarmticks != 0){
       p->duration++;
+      // equal to avoid retrant, duration clear after hldr return in sigreturn
       if(p->duration == p->alarmticks){
         // store current context
         *p->alarmtf = *p->trapframe;
         p->trapframe->epc = p->alarmhdlr;
-        p->duration = 0;
       }
     }
     yield();
