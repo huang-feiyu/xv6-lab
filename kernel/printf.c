@@ -132,3 +132,13 @@ printfinit(void)
   initlock(&pr.lock, "pr");
   pr.locking = 1;
 }
+
+/**
+ * backtrace - Print the saved return address in each stack frame
+ *           - Huang (c) 2022-09-21
+ */
+void
+backtrace(void)
+{
+  printf("not implemented\n");
+}
