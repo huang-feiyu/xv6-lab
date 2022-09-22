@@ -21,16 +21,15 @@ struct run {
 struct {
   struct spinlock lock;
   struct run *freelist;
+  char lockname[16];
 } kmem[NCPU];
 
 void
 kinit()
 {
-  char lockname[16];
   for(int i = 0; i < NCPU; i++){
-    memset(lockname, 0, 16); // clear buffer
-    snprintf(lockname, 16, "kmem[%d]", i);
-    initlock(&kmem[i].lock, lockname);
+    snprintf(kmem[i].lockname, 16, "kmem[%d]", i);
+    initlock(&kmem[i].lock, kmem[i].lockname);
   }
   freerange(end, (void*)PHYSTOP);
 }
@@ -83,11 +82,22 @@ kalloc(void)
   struct run *r;
   int id = cpuid();
 
-  acquire(&kmem[id].lock);
-  r = kmem[id].freelist;
-  if(r)
+  if(kmem[id].freelist){
+    acquire(&kmem[id].lock);
+    r = kmem[id].freelist;
     kmem[id].freelist = r->next;
-  release(&kmem[id].lock);
+    release(&kmem[id].lock);
+  } else {
+    int aid; // another cpu id
+    for(int i = 1; i < NCPU; i++){
+      aid = (id + i) % NCPU;
+      if(kmem[aid].freelist) break;
+    }
+    acquire(&kmem[aid].lock);
+    r = kmem[aid].freelist;
+    kmem[aid].freelist = r->next;
+    release(&kmem[aid].lock);
+  }
 
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
