@@ -11,3 +11,7 @@ strategies for the xv6 memory allocator.
 The basic idea is to maintain a free list per CPU, each list with its own lock.
 Allocations and frees on different CPUs can run in parallel, because each CPU
 will operate on a different list.
+
+### Debug
+
+<b>*</b> panic: init exiting => bug01
