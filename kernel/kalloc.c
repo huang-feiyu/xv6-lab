@@ -82,22 +82,25 @@ kalloc(void)
   struct run *r;
   int id = cpuid();
 
-  if(kmem[id].freelist){
-    acquire(&kmem[id].lock);
-    r = kmem[id].freelist;
+  acquire(&kmem[id].lock);
+  r = kmem[id].freelist;
+  if(r){
     kmem[id].freelist = r->next;
-    release(&kmem[id].lock);
   } else {
     int aid; // another cpu id
     for(int i = 1; i < NCPU; i++){
       aid = (id + i) % NCPU;
-      if(kmem[aid].freelist) break;
+      acquire(&kmem[aid].lock);
+      if(kmem[aid].freelist){
+        r = kmem[aid].freelist;
+        kmem[aid].freelist = r->next;
+        release(&kmem[aid].lock);
+        break;
+      }
+      release(&kmem[aid].lock);
     }
-    acquire(&kmem[aid].lock);
-    r = kmem[aid].freelist;
-    kmem[aid].freelist = r->next;
-    release(&kmem[aid].lock);
   }
+  release(&kmem[id].lock);
 
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
