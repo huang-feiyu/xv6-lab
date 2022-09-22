@@ -45,7 +45,7 @@ kinit()
 
 <b>*</b> kernel panic: load page fault => bug03
 
-I think I have done nothing, but it works well... Weird concurrenc
+I think I have done nothing, but it works well... Weird concurrent programming.
 
 ```diff
 -  if(kmem[id].freelist){
