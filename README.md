@@ -77,3 +77,7 @@ I think I have done nothing, but it works well... Weird concurrenc
    }
 +  release(&kmem[id].lock);
 ```
+
+## Buffer Cache
+
+TODO:
