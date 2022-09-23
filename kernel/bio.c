@@ -63,9 +63,6 @@ binit(void)
     b->next = bcache.bucket[0].head.next;
     initsleeplock(&b->lock, "buffer");
     bcache.bucket[0].head.next = b;
-    acquire(&tickslock);
-    b->ticks = ticks;
-    release(&tickslock);
   }
 }
 
@@ -92,9 +89,6 @@ bget(uint dev, uint blockno)
     printf("bget: cnt[%d] %p %d\n", cnt, (uint64)b, b->refcnt);
 #endif
     if(b->dev == dev && b->blockno == blockno){
-      acquire(&tickslock);
-      b->ticks = ticks; // for LRU
-      release(&tickslock);
       b->refcnt++;
       release(&bcache.bucket[i].lock);
       acquiresleep(&b->lock);
@@ -129,9 +123,6 @@ bget(uint dev, uint blockno)
 #ifdef DEBUG
       printf("bget: move %p from bucket[%d] to bucket[%d]\n", (uint64)bp, p, i);
 #endif
-      acquire(&tickslock);
-      bp->ticks = ticks;
-      release(&tickslock);
       bp->dev = dev;
       bp->blockno = blockno;
       bp->valid = 0;
@@ -196,6 +187,12 @@ brelse(struct buf *b)
   acquire(&bcache.bucket[i].lock);
   if(b->refcnt == 0) panic("brelse: release a un-ref buf");
   b->refcnt--;
+  if(b->refcnt == 0){
+    // reduce unnecessary lock holding
+    acquire(&tickslock);
+    b->ticks = ticks;
+    release(&tickslock);
+  }
 
 #ifdef DEBUG
   printf("breles: release %p; refcnt: %d\n", (uint64)b, b->refcnt);
