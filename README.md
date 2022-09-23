@@ -114,7 +114,13 @@ If I do not use LRU policy, it is ok. There must be sth wrong with my LRU.
 
 <b>*</b> `break` issue => bug06
 
-It seems like a lock issue: We must call `bupdate` with a lock. But it is hard
-to do it.
+It seems like a lock issue: <s>We must call `bupdate` with a lock. But it is hard
+to do it.</s>
 
 * Update `bupdate` to extern int ticks
+* Maintain ticks in `breles`
+
+This is an issue about lock. Here is a hint from guide:
+Searching in the hash table for a buffer and allocating an entry for that buffer
+when the buffer is not found must be atomic.
+

@@ -63,7 +63,9 @@ binit(void)
     b->next = bcache.bucket[0].head.next;
     initsleeplock(&b->lock, "buffer");
     bcache.bucket[0].head.next = b;
+    acquire(&tickslock);
     b->ticks = ticks;
+    release(&tickslock);
   }
 }
 
@@ -90,7 +92,9 @@ bget(uint dev, uint blockno)
     printf("bget: cnt[%d] %p %d\n", cnt, (uint64)b, b->refcnt);
 #endif
     if(b->dev == dev && b->blockno == blockno){
+      acquire(&tickslock);
       b->ticks = ticks; // for LRU
+      release(&tickslock);
       b->refcnt++;
       release(&bcache.bucket[i].lock);
       acquiresleep(&b->lock);
@@ -110,19 +114,10 @@ bget(uint dev, uint blockno)
     struct buf *pbp = 0; // prev pointer of result buffer
     struct buf *pb;      // prev pointer of b
 
-#ifdef VERBOSE
-    printf("bget: bucket[%d]\n", p);
-    for(b = bcache.bucket[p].head.next; b != 0; b = b->next)
-      printf("\t%p %d\n", (uint64)b, b->refcnt);
-#endif
-
     for(b = bcache.bucket[p].head.next, pb = &bcache.bucket[p].head;
         b != 0; b = b->next, pb = pb->next)
       if(b->refcnt == 0){
-#ifdef VERBOSE
-        printf("bget: find buf whose refcnt = 0\n");
-#endif
-        if(bp == 0 || bp->ticks < b->ticks){
+        if(bp == 0 || bp->ticks > b->ticks){
           bp = b;
           pbp = pb;
           break;
@@ -134,7 +129,9 @@ bget(uint dev, uint blockno)
 #ifdef DEBUG
       printf("bget: move %p from bucket[%d] to bucket[%d]\n", (uint64)bp, p, i);
 #endif
+      acquire(&tickslock);
       bp->ticks = ticks;
+      release(&tickslock);
       bp->dev = dev;
       bp->blockno = blockno;
       bp->valid = 0;
