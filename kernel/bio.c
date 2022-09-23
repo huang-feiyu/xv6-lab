@@ -24,7 +24,7 @@
 #include "buf.h"
 
 // I can just add the hashbucket to bcache directly,
-// but it is harder to understand
+// cause it is easier to understand
 struct hashbucket {
   char lockname[16];
   struct spinlock lock;
@@ -55,10 +55,11 @@ binit(void)
   for(int i = 0; i < NBUCKET; i++){
     snprintf(bcache.bucket[i].lockname, 16, "bcache[%d]", i);
     initlock(&bcache.bucket[i].lock, bcache.bucket[i].lockname);
-    bcache.bucket[i].head.next = &bcache.bucket[i].head; // cycle linked list
+    bcache.bucket[i].head.next = 0; // non-cycle linked list
   }
   // Init empty buffers, other buckets can steal from bucket[0]
-  for(b = bcache.buf; b < bcache.buf+NBUF; b++){
+  for(int i = 0; i < NBUF; i++){
+    b = &bcache.buf[i];
     b->next = bcache.bucket[0].head.next;
     initsleeplock(&b->lock, "buffer");
     bcache.bucket[0].head.next = b;
@@ -83,11 +84,18 @@ bget(uint dev, uint blockno)
   struct buf *b;
   uint i = hash(blockno); // needed bucket index
   uint p = i;             // finding in which bucket, pointer
+#ifdef DEBUG
+  uint cnt = 0;
+#endif
 
   acquire(&bcache.bucket[i].lock);
 
   // Is the block already cached?
-  for(b = bcache.bucket[i].head.next; b != &bcache.bucket[i].head; b = b->next){
+  for(b = bcache.bucket[i].head.next; b != 0; b = b->next){
+#ifdef DEBUG
+    cnt++;
+    printf("bget: cnt[%d] %p\n", cnt, (uint64)b);
+#endif
     if(b->dev == dev && b->blockno == blockno){
       b->ticks = 0; // for LRU
       b->refcnt++;
@@ -110,7 +118,7 @@ bget(uint dev, uint blockno)
     struct buf *pb;     // prev pointer of b
 
     for(b = bcache.bucket[p].head.next, pb = &bcache.bucket[p].head;
-        b != &bcache.bucket[p].head; b = b->next, pb = pb->next)
+        b != 0; b = b->next, pb = pb->next)
       if(b->refcnt == 0)
         if(bp == 0 || (bp != 0 && bp->ticks < b->ticks)){
           bp = b;
@@ -119,6 +127,9 @@ bget(uint dev, uint blockno)
 
     // find the LRU unused buf
     if(bp != 0){
+#ifdef DEBUG
+      printf("bget: move %p from bucket[%d] to bucket[%d]\n", (uint64)bp, p, i);
+#endif
       bp->ticks = 0;
       bp->dev = dev;
       bp->blockno = blockno;
