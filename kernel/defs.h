@@ -224,4 +224,5 @@ int             sockwrite(struct sock *, uint64, int);
 void            sockrecvudp(struct mbuf*, uint32, uint16, uint16);
 #endif
 
-#define DEBUG
+// #define DEBUG
+// #define VERBOSE

@@ -97,3 +97,24 @@ Use 0 as terminal, donot use cycle linked list.
 <b>*</b> panic: no buffers => bug05
 
 It seems like every buffer has been used<s>, not a bug?</s>
+
+If I do not use LRU policy, it is ok. There must be sth wrong with my LRU.
+
+```diff
+  for(b = bcache.bucket[p].head.next, pb = &bcache.bucket[p].head;
+      b != 0; b = b->next, pb = pb->next)
+    if(b->refcnt == 0){
+      if(bp == 0 || (bp != 0 && bp->ticks < b->ticks)){
+        bp = b;
+        pbp = pb;
++       break;
+      }
+    }
+```
+
+<b>*</b> `break` issue => bug06
+
+It seems like a lock issue: We must call `bupdate` with a lock. But it is hard
+to do it.
+
+TODO:

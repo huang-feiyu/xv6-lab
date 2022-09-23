@@ -110,15 +110,13 @@ bget(uint dev, uint blockno)
 
   release(&bcache.bucket[i].lock);
 
-  cnt = 0;
   while(1){
-    cnt++;
     // apporximately LRU policy: (Bad design?)
     //  find the LRU buf in one bucket a time via timestamp
     //  * if there is, end
     //  * if there is none, change to another bucket
     acquire(&bcache.bucket[p].lock);
-    struct buf *bp = 0; // result buffer pointer, the LRU one
+    struct buf *bp;     // result buffer pointer, the LRU one
     struct buf *pbp;    // prev pointer of result buffer
     struct buf *pb;     // prev pointer of b
 
@@ -134,9 +132,10 @@ bget(uint dev, uint blockno)
 #ifdef VERBOSE
         printf("bget: find buf whose refcnt = 0\n");
 #endif
-        if(bp == 0 || (bp != 0 && bp->ticks < b->ticks)){
+        if(bp == 0 || bp->ticks < b->ticks){
           bp = b;
           pbp = pb;
+          break;
         }
       }
 
@@ -167,7 +166,7 @@ bget(uint dev, uint blockno)
     if(p == i) break; // walk through all bufs, but not find
   }
 #ifdef DEBUG
-  printf("bget: bucket[%d] cnt: %d NBUF: %d\n", i, cnt, NBUF);
+  printf("bget: bucket[%d]\n", i);
 #endif
   panic("bget: no buffers");
 }
