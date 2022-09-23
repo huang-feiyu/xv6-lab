@@ -5,8 +5,16 @@ struct buf {
   uint blockno;
   struct sleeplock lock;
   uint refcnt;
-  struct buf *prev; // LRU cache list
   struct buf *next;
   uchar data[BSIZE];
+
+  uint ticks; // for LRU, it seems like a queue is easier to implement
 };
 
+#define NBUCKET 13
+
+uint
+hash(uint blockno)
+{
+  return blockno % NBUCKET;
+}

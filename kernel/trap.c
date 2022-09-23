@@ -80,6 +80,8 @@ usertrap(void)
   if(which_dev == 2)
     yield();
 
+  bupdate();
+
   usertrapret();
 }
 

@@ -23,14 +23,19 @@
 #include "fs.h"
 #include "buf.h"
 
+// I can just add the hashbucket to bcache directly,
+// but it is harder to understand
+struct hashbucket {
+  char lockname[16];
+  struct spinlock lock;
+  struct buf head; // each bucket head; dummy head, head.next matters
+};
+
 struct {
   struct spinlock lock;
   struct buf buf[NBUF];
 
-  // Linked list of all buffers, through prev/next.
-  // Sorted by how recently the buffer was used.
-  // head.next is most recent, head.prev is least.
-  struct buf head;
+  struct hashbucket bucket[NBUCKET]; // 13 buckets => 1 hash table
 } bcache;
 
 void
@@ -38,18 +43,29 @@ binit(void)
 {
   struct buf *b;
 
-  initlock(&bcache.lock, "bcache");
+  initlock(&bcache.lock, "bcache"); // big lock
 
-  // Create linked list of buffers
-  bcache.head.prev = &bcache.head;
-  bcache.head.next = &bcache.head;
-  for(b = bcache.buf; b < bcache.buf+NBUF; b++){
-    b->next = bcache.head.next;
-    b->prev = &bcache.head;
-    initsleeplock(&b->lock, "buffer");
-    bcache.head.next->prev = b;
-    bcache.head.next = b;
+  // Init for every bucket
+  for(int i = 0; i < NBUCKET; i++){
+    snprintf(bcache.bucket[i].lockname, 16, "bcache[%d]", i);
+    initlock(&bcache.bucket[i].lock, bcache.bucket[i].lockname);
+    bcache.bucket[i].head.next = &bcache.bucket[i].head; // cycle linked list
   }
+  // Init empty buffers, other buckets can steal from bucket[0]
+  for(b = bcache.buf; b < bcache.buf+NBUF; b++){
+    b->next = bcache.bucket[0].head.next;
+    initsleeplock(&b->lock, "buffer");
+    bcache.bucket[0].head.next = b;
+  }
+}
+
+
+// Update timestamp when a tick
+void
+bupdate()
+{
+  for(int i = 0; i < NBUF; i++)
+    bcache.buf[i].ticks++;
 }
 
 // Look through buffer cache for block on device dev.
@@ -59,31 +75,64 @@ static struct buf*
 bget(uint dev, uint blockno)
 {
   struct buf *b;
+  uint i = hash(blockno); // needed bucket index
+  uint p = i;             // finding in which bucket, pointer
 
-  acquire(&bcache.lock);
+  acquire(&bcache.bucket[i].lock);
 
   // Is the block already cached?
-  for(b = bcache.head.next; b != &bcache.head; b = b->next){
+  for(b = bcache.bucket[i].head.next; b != &bcache.bucket[i].head; b = b->next){
     if(b->dev == dev && b->blockno == blockno){
+      b->ticks = 0; // for LRU
       b->refcnt++;
-      release(&bcache.lock);
+      release(&bcache.bucket[i].lock);
       acquiresleep(&b->lock);
       return b;
     }
   }
 
-  // Not cached.
-  // Recycle the least recently used (LRU) unused buffer.
-  for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
-    if(b->refcnt == 0) {
-      b->dev = dev;
-      b->blockno = blockno;
-      b->valid = 0;
-      b->refcnt = 1;
-      release(&bcache.lock);
-      acquiresleep(&b->lock);
-      return b;
+  release(&bcache.bucket[i].lock);
+
+  while(1){
+    // apporximately LRU policy: (Bad design?)
+    //  find the LRU buf in one bucket a time via timestamp
+    //  * if there is, end
+    //  * if there is none, change to another bucket
+    acquire(&bcache.bucket[p].lock);
+    struct buf *bp = 0; // result buffer pointer, the LRU one
+    struct buf *pbp;    // prev pointer of result buffer
+    struct buf *pb;     // prev pointer of b
+
+    for(b = bcache.bucket[p].head.next, pb = &bcache.bucket[p].head;
+        b != &bcache.bucket[p].head; b = b->next, pb = pb->next)
+      if(b->refcnt == 0)
+        if(bp == 0 || (bp != 0 && bp->ticks < b->ticks)){
+          bp = b;
+          pbp = pb;
+        }
+
+    // find the LRU unused buf
+    if(bp != 0){
+      bp->ticks = 0;
+      bp->dev = dev;
+      bp->blockno = blockno;
+      bp->valid = 0;
+      bp->refcnt = 1;
+      pbp->next = bp->next; // remove bp from bucket[p]
+      release(&bcache.bucket[p].lock);
+
+      acquire(&bcache.bucket[i].lock);
+      bp->next = bcache.bucket[i].head.next; // insert bp into bucket[i]
+      bcache.bucket[i].head.next = b;
+      release(&bcache.bucket[i].lock);
+      acquiresleep(&bp->lock);
+      return bp;
     }
+
+    release(&bcache.bucket[p].lock);
+
+    p = (p + 1) % NBUCKET;
+    if(p == i) break; // walk through all bufs, but not find
   }
   panic("bget: no buffers");
 }

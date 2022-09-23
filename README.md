@@ -80,4 +80,11 @@ I think I have done nothing, but it works well... Weird concurrent programming.
 
 ## Buffer Cache
 
-TODO:
+What we need to do is: process the cache buffers of different hash buckets
+concurrently.
+
+The main challenge is to figure out the relationship between buf and bucket.
+In my implementation, it is like this: (modifed sth, it is a cycle linked list now)
+
+<img src="https://user-images.githubusercontent.com/70138429/191880045-5c22aa54-3476-423d-b97d-ca584ac32c06.png" height="500px"></img>
+
