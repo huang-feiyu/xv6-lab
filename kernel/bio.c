@@ -38,6 +38,12 @@ struct {
   struct hashbucket bucket[NBUCKET]; // 13 buckets => 1 hash table
 } bcache;
 
+uint
+hash(uint blockno)
+{
+  return blockno % NBUCKET;
+}
+
 void
 binit(void)
 {
@@ -170,33 +176,28 @@ brelse(struct buf *b)
 
   releasesleep(&b->lock);
 
-  acquire(&bcache.lock);
+  int i = hash(b->blockno);
+
+  acquire(&bcache.bucket[i].lock);
   b->refcnt--;
-  if (b->refcnt == 0) {
-    // no one is waiting for it.
-    b->next->prev = b->prev;
-    b->prev->next = b->next;
-    b->next = bcache.head.next;
-    b->prev = &bcache.head;
-    bcache.head.next->prev = b;
-    bcache.head.next = b;
-  }
   
-  release(&bcache.lock);
+  release(&bcache.bucket[i].lock);
 }
 
 void
 bpin(struct buf *b) {
-  acquire(&bcache.lock);
+  int i = hash(b->blockno);
+  acquire(&bcache.bucket[i].lock);
   b->refcnt++;
-  release(&bcache.lock);
+  release(&bcache.bucket[i].lock);
 }
 
 void
 bunpin(struct buf *b) {
-  acquire(&bcache.lock);
+  int i = hash(b->blockno);
+  acquire(&bcache.bucket[i].lock);
   b->refcnt--;
-  release(&bcache.lock);
+  release(&bcache.bucket[i].lock);
 }
 
 

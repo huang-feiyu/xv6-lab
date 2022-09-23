@@ -12,9 +12,3 @@ struct buf {
 };
 
 #define NBUCKET 13
-
-uint
-hash(uint blockno)
-{
-  return blockno % NBUCKET;
-}
