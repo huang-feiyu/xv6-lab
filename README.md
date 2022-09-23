@@ -127,3 +127,11 @@ when the buffer is not found must be atomic.
 Okay, I failed to find out the bug. But changing the `NBUF` to `MAXOPBLOCKS*12`
 works for me, it's an idea from web.
 
+---
+
+```
+Time:   11 Hours
+Score:  70/70
+Author: Huang
+Date:   2022-09-23
+```
