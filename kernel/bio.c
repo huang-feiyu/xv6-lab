@@ -107,7 +107,9 @@ bget(uint dev, uint blockno)
 
   release(&bcache.bucket[i].lock);
 
+  cnt = 0;
   while(1){
+    cnt++;
     // apporximately LRU policy: (Bad design?)
     //  find the LRU buf in one bucket a time via timestamp
     //  * if there is, end
@@ -151,6 +153,9 @@ bget(uint dev, uint blockno)
     p = (p + 1) % NBUCKET;
     if(p == i) break; // walk through all bufs, but not find
   }
+#ifdef DEBUG
+  printf("bget: bucket[%d] cnt: %d NBUF: %d\n", i, cnt, NBUF);
+#endif
   panic("bget: no buffers");
 }
 

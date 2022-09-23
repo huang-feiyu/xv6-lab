@@ -93,3 +93,7 @@ In my implementation, it is like this: (<s>modifed sth, it is a cycle linked lis
 <b>*</b> Stuck at bget first for-loop => bug04
 
 Use 0 as terminal, donot use cycle linked list.
+
+<b>*</b> panic: no buffers => bug05
+
+It seems like every buffer has been used, not a bug?
