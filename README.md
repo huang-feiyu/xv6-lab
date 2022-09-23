@@ -117,4 +117,4 @@ If I do not use LRU policy, it is ok. There must be sth wrong with my LRU.
 It seems like a lock issue: We must call `bupdate` with a lock. But it is hard
 to do it.
 
-TODO:
+* Update `bupdate` to extern int ticks

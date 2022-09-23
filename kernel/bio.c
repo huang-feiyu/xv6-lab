@@ -63,20 +63,10 @@ binit(void)
     b->next = bcache.bucket[0].head.next;
     initsleeplock(&b->lock, "buffer");
     bcache.bucket[0].head.next = b;
+    b->ticks = ticks;
   }
 }
 
-
-// Update timestamp when a tick
-void
-bupdate()
-{
-  for(int i = 0; i < NBUF; i++)
-    bcache.buf[i].ticks++;
-#ifdef DEBUG
-  printf("bupdate: ticks++\n");
-#endif
-}
 
 // Look through buffer cache for block on device dev.
 // If not found, allocate a buffer.
@@ -100,7 +90,7 @@ bget(uint dev, uint blockno)
     printf("bget: cnt[%d] %p %d\n", cnt, (uint64)b, b->refcnt);
 #endif
     if(b->dev == dev && b->blockno == blockno){
-      b->ticks = 0; // for LRU
+      b->ticks = ticks; // for LRU
       b->refcnt++;
       release(&bcache.bucket[i].lock);
       acquiresleep(&b->lock);
@@ -116,9 +106,9 @@ bget(uint dev, uint blockno)
     //  * if there is, end
     //  * if there is none, change to another bucket
     acquire(&bcache.bucket[p].lock);
-    struct buf *bp;     // result buffer pointer, the LRU one
-    struct buf *pbp;    // prev pointer of result buffer
-    struct buf *pb;     // prev pointer of b
+    struct buf *bp = 0;  // result buffer pointer, the LRU one
+    struct buf *pbp = 0; // prev pointer of result buffer
+    struct buf *pb;      // prev pointer of b
 
 #ifdef VERBOSE
     printf("bget: bucket[%d]\n", p);
@@ -144,7 +134,7 @@ bget(uint dev, uint blockno)
 #ifdef DEBUG
       printf("bget: move %p from bucket[%d] to bucket[%d]\n", (uint64)bp, p, i);
 #endif
-      bp->ticks = 0;
+      bp->ticks = ticks;
       bp->dev = dev;
       bp->blockno = blockno;
       bp->valid = 0;
