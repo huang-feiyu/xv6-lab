@@ -11,4 +11,4 @@ struct buf {
   uint ticks; // for LRU, it seems like a queue is easier to implement
 };
 
-#define NBUCKET 13
+#define NBUCKET 3

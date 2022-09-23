@@ -96,4 +96,4 @@ Use 0 as terminal, donot use cycle linked list.
 
 <b>*</b> panic: no buffers => bug05
 
-It seems like every buffer has been used, not a bug?
+It seems like every buffer has been used<s>, not a bug?</s>

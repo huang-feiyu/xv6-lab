@@ -73,6 +73,9 @@ bupdate()
 {
   for(int i = 0; i < NBUF; i++)
     bcache.buf[i].ticks++;
+#ifdef DEBUG
+  printf("bupdate: ticks++\n");
+#endif
 }
 
 // Look through buffer cache for block on device dev.
@@ -94,7 +97,7 @@ bget(uint dev, uint blockno)
   for(b = bcache.bucket[i].head.next; b != 0; b = b->next){
 #ifdef DEBUG
     cnt++;
-    printf("bget: cnt[%d] %p\n", cnt, (uint64)b);
+    printf("bget: cnt[%d] %p %d\n", cnt, (uint64)b, b->refcnt);
 #endif
     if(b->dev == dev && b->blockno == blockno){
       b->ticks = 0; // for LRU
@@ -119,13 +122,23 @@ bget(uint dev, uint blockno)
     struct buf *pbp;    // prev pointer of result buffer
     struct buf *pb;     // prev pointer of b
 
+#ifdef VERBOSE
+    printf("bget: bucket[%d]\n", p);
+    for(b = bcache.bucket[p].head.next; b != 0; b = b->next)
+      printf("\t%p %d\n", (uint64)b, b->refcnt);
+#endif
+
     for(b = bcache.bucket[p].head.next, pb = &bcache.bucket[p].head;
         b != 0; b = b->next, pb = pb->next)
-      if(b->refcnt == 0)
+      if(b->refcnt == 0){
+#ifdef VERBOSE
+        printf("bget: find buf whose refcnt = 0\n");
+#endif
         if(bp == 0 || (bp != 0 && bp->ticks < b->ticks)){
           bp = b;
           pbp = pb;
         }
+      }
 
     // find the LRU unused buf
     if(bp != 0){
@@ -195,8 +208,12 @@ brelse(struct buf *b)
   int i = hash(b->blockno);
 
   acquire(&bcache.bucket[i].lock);
+  if(b->refcnt == 0) panic("brelse: release a un-ref buf");
   b->refcnt--;
-  
+
+#ifdef DEBUG
+  printf("breles: release %p; refcnt: %d\n", (uint64)b, b->refcnt);
+#endif
   release(&bcache.bucket[i].lock);
 }
 
