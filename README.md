@@ -124,8 +124,8 @@ This is an issue about lock. Here is a hint from guide:
 Searching in the hash table for a buffer and allocating an entry for that buffer
 when the buffer is not found must be atomic.
 
-Okay, I failed to find out the bug. But changing the `NBUF` to `MAXOPBLOCKS*12`
-works for me, it's an idea from web.
+<s>Okay, I failed to find out the bug. But changing the `NBUF` to
+`MAXOPBLOCKS*12` works for me, it's an idea from web.</s>
 
 ---
 
@@ -135,6 +135,3 @@ Score:  70/70
 Author: Huang
 Date:   2022-09-23
 ```
-
-TODO: There is a bug to find out.
-

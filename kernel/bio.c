@@ -23,6 +23,8 @@
 #include "fs.h"
 #include "buf.h"
 
+#define BIGLOCK
+
 // I can just add the hashbucket to bcache directly,
 // cause it is easier to understand
 struct hashbucket {
@@ -80,7 +82,11 @@ bget(uint dev, uint blockno)
   uint cnt = 0;
 #endif
 
+#ifdef BIGLOCK
+  acquire(&bcache.lock);
+#else
   acquire(&bcache.bucket[i].lock);
+#endif
 
   // Is the block already cached?
   for(b = bcache.bucket[i].head.next; b != 0; b = b->next){
@@ -90,20 +96,28 @@ bget(uint dev, uint blockno)
 #endif
     if(b->dev == dev && b->blockno == blockno){
       b->refcnt++;
+#ifdef BIGLOCK
+      release(&bcache.lock);
+#else
       release(&bcache.bucket[i].lock);
+#endif
       acquiresleep(&b->lock);
       return b;
     }
   }
 
+#ifndef BIGLOCK
   release(&bcache.bucket[i].lock);
+#endif
 
   while(1){
     // apporximately LRU policy: (Bad design?)
     //  find the LRU buf in one bucket a time via timestamp
     //  * if there is, end
     //  * if there is none, change to another bucket
+#ifndef BIGLOCK
     acquire(&bcache.bucket[p].lock);
+#endif
     struct buf *bp = 0;  // result buffer pointer, the LRU one
     struct buf *pbp = 0; // prev pointer of result buffer
     struct buf *pb;      // prev pointer of b
@@ -128,17 +142,25 @@ bget(uint dev, uint blockno)
       bp->valid = 0;
       bp->refcnt = 1;
       pbp->next = bp->next; // remove bp from bucket[p]
+#ifndef BIGLOCK
       release(&bcache.bucket[p].lock);
 
       acquire(&bcache.bucket[i].lock);
+#endif
       bp->next = bcache.bucket[i].head.next; // insert bp into bucket[i]
       bcache.bucket[i].head.next = b;
+#ifdef BIGLOCK
+      release(&bcache.lock);
+#else
       release(&bcache.bucket[i].lock);
+#endif
       acquiresleep(&bp->lock);
       return bp;
     }
 
+#ifndef BIGLOCK
     release(&bcache.bucket[p].lock);
+#endif
 
     p = (p + 1) % NBUCKET;
     if(p == i) break; // walk through all bufs, but not find
