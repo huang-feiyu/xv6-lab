@@ -156,8 +156,8 @@ holding bucket lock.
 ---
 
 ```
-Time:   11 Hours
+Time:   13 Hours
 Score:  70/70
 Author: Huang
-Date:   2022-09-23
+Date:   2022-09-25
 ```
