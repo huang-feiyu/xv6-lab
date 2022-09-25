@@ -122,7 +122,6 @@ bget(uint dev, uint blockno)
         if(bp == 0 || bp->ticks > b->ticks){
           bp = b;
           pbp = pb;
-          break;
         }
       }
 
@@ -140,7 +139,7 @@ bget(uint dev, uint blockno)
 
       acquire(&bcache.bucket[i].lock);
       bp->next = bcache.bucket[i].head.next; // insert bp into bucket[i]
-      bcache.bucket[i].head.next = b;
+      bcache.bucket[i].head.next = bp;
       release(&bcache.bucket[i].lock);
 #ifdef BIGLOCK
       release(&bcache.lock);

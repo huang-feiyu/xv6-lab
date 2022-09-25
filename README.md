@@ -120,12 +120,34 @@ to do it.</s>
 * Update `bupdate` to extern int ticks
 * Maintain ticks in `breles`
 
+<s>Cannot fix this for now.</s>
+
+```diff
+- bcache.bucket[i].head.next = b;
++ bcache.bucket[i].head.next = bp;
+```
+
+<b>*</b> freeing free block => bug07
+
 This is an issue about lock. Here is a hint from guide:
 Searching in the hash table for a buffer and allocating an entry for that buffer
 when the buffer is not found must be atomic.
 
 <s>Okay, I failed to find out the bug. But changing the `NBUF` to
 `MAXOPBLOCKS*12` works for me, it's an idea from web.</s>
+
+First, add a big lock to ensure implementation works well in in-efficient way.
+
+Then, re-design `bget` orderly:
+
+Search in bucket to find whether cache hits
+1. Cache Hits => return the buf
+2. Cache Miss => find unused buf in it self
+  1. Find one => return the buf
+  2. Steal unused buf from others => get one OR panic
+
+1 & 2.1 can be protected by **bucket** lock;
+2.2 involves other **bucket** => need a big lock.
 
 ---
 
