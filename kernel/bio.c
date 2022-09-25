@@ -23,7 +23,7 @@
 #include "fs.h"
 #include "buf.h"
 
-#define BIGLOCK
+// #define BIGLOCK
 
 // I can just add the hashbucket to bcache directly,
 // cause it is easier to understand
@@ -93,7 +93,6 @@ bget(uint dev, uint blockno)
     cnt++;
     printf("bget: cnt[%d] %p %d\n", cnt, (uint64)b, b->refcnt);
 #endif
-    // 1. Cache hits
     if(b->dev == dev && b->blockno == blockno){
       b->refcnt++;
       release(&bcache.bucket[i].lock);
@@ -105,44 +104,14 @@ bget(uint dev, uint blockno)
     }
   }
 
-  // apporximately LRU policy: (Bad design?)
-  //  find the LRU buf in one bucket a time via timestamp
-  //  * if there is, end
-  //  * if there is none, change to another bucket
-
-  // 2. Not cached => find an unused buf
-  struct buf *bp = 0;  // result buffer pointer, the LRU one
-
-  // 2.1 find in itself
-  for(b = bcache.bucket[i].head.next; b != 0; b = b->next){
-    if(b->refcnt == 0)
-      if(bp == 0 || bp->ticks > b->ticks)
-        bp = b;
-  }
-
-  // find one in itself
-  if(bp != 0){
-    bp->dev = dev;
-    bp->blockno = blockno;
-    bp->valid = 0;
-    bp->refcnt = 1;
-    bcache.bucket[i].head.next = bp;
-    release(&bcache.bucket[i].lock);
-#ifdef BIGLOCK
-    release(&bcache.lock);
-#endif
-    acquiresleep(&bp->lock);
-    return bp;
-  }
-
-#ifndef BIGLOCK
-  acquire(&bcache.lock);
-#endif
-  p++;
+  p = (p + 1) % NBUCKET; // NOTE: give up find in bucket itself
   while(1){
-    // acquire(&bcache.bucket[p].lock); // NOTE: might cause a dead lock
-
-    //struct buf *bp = 0;  // result buffer pointer, the LRU one
+    // apporximately LRU policy: (Bad design?)
+    //  find the LRU buf in one bucket a time via timestamp
+    //  * if there is, end (no this step)
+    //  * if there is none, change to another bucket
+    acquire(&bcache.bucket[p].lock);
+    struct buf *bp = 0;  // result buffer pointer, the LRU one
     struct buf *pbp = 0; // prev pointer of result buffer
     struct buf *pb;      // prev pointer of b
 
@@ -165,21 +134,19 @@ bget(uint dev, uint blockno)
       bp->valid = 0;
       bp->refcnt = 1;
       pbp->next = bp->next; // remove bp from bucket[p]
-      // release(&bcache.bucket[p].lock);
+      release(&bcache.bucket[p].lock);
 
       bp->next = bcache.bucket[i].head.next; // insert bp into bucket[i]
       bcache.bucket[i].head.next = bp;
       release(&bcache.bucket[i].lock);
 #ifdef BIGLOCK
       release(&bcache.lock);
-#else
-      release(&bcache.lock);
 #endif
       acquiresleep(&bp->lock);
       return bp;
     }
 
-    // release(&bcache.bucket[p].lock);
+    release(&bcache.bucket[p].lock);
 
     p = (p + 1) % NBUCKET;
     if(p == i) break; // walk through all bufs, but not find

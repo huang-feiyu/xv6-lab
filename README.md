@@ -142,12 +142,16 @@ Then, re-design `bget` orderly:
 
 Search in bucket to find whether cache hits
 1. Cache Hits => return the buf
-2. Cache Miss => find unused buf in it self
-  1. Find one => return the buf
+2. Cache Miss => <s>find unused buf in itself</s>
+  1. <s>Find one => return the buf</s>
   2. Steal unused buf from others => get one OR panic
 
 1 & 2.1 can be protected by **bucket** lock;
 2.2 involves other **bucket** => need a big lock.
+
+In the end, I choose to not find unused buf in bucket itself, so there is no
+dead lock anymore. Because they all gain lock orderly, maintain atomicity by
+holding bucket lock.
 
 ---
 
