@@ -15,3 +15,9 @@ Very similar to [M2:libco](http://jyywiki.cn/OS/2022/labs/M2).
 
 My design policy: steal from kernel... =>
 It is fairly easy to implement, because the skeleton has done almost everything.
+
+## Using thread
+
+Explore parallel programming with threads and locks using a hash table.
+
+Add a lock to each bucket, I should do this lab before lock.
