@@ -24,3 +24,12 @@ Add a lock to each bucket, I should do this lab before lock.
 ## Barrier
 
 Wait for condition variable, broadcast after all threads reach.
+
+---
+
+```
+Time:   2 Hours
+Score:  60/60
+Author: Huang
+Date:   2022-09-26
+```
