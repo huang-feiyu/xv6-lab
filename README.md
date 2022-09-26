@@ -19,6 +19,7 @@
 * [Chapter 6](./Notes/Note06.md): Locking
 * [Chapter 7](./Notes/Note07.md): Scheduling
 * [Chapter 8](./Notes/Note08.md): File System
+* [Chapter 9](./Notes/Note09.md): Concurrency Revisited
 
 ## Implementation
 
