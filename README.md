@@ -1,5 +1,29 @@
 # syscall
 
+Trace:
+1. Add a member to `struct proc` to mark the process is being traced, and which
+   syscalls to traced
+2. Every time when `syscall()` is executed to call specific syscall, use mask to
+   check whether the syscall is marked.<br/>
+   If is, print the syscall info. Do nothing, otherwise.
+
+Only one thing need to mention here: when `fork()` creates a child process, the
+child will inherit the mask of parent.
+
+Sysinfo: collect amount of free memory, number of UNUSED process, number of free fd
+1. Add `freemem()` at *kalloc.c*: walk through the freelist of kmem, for every
+   run increment 1. The result is page number, times PGSIZE => result
+2. Add `freeproc()` at *proc.c*: walk through the proc array, count the UNUSED
+   processes
+3. Add `freefd()` at *proc.c*: walk through the current process's ofile, count
+   the free file descriptor
+4. Implement `sysinfo()`: consturct `struct sysinfo`, and copy it from kernel
+   to user
+
+---
+
+# syscall
+
 > [syscall](https://pdos.csail.mit.edu/6.S081/2021/labs/syscall.html) lab helps
 > you understand how they work and will expose you to some of the internals of
 > the xv6 kernel.
