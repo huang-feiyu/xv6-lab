@@ -1,5 +1,65 @@
 # pgtbl
 
+> lab 3: Report
+
+## Analysis on content
+
+What we gonna do in this lab is to add a kernel page table for **each process**.
+Specifically, when a user process enters kernel, it will change the pgtbl
+pointer `satp` to its own kernel page table(pvm). The process's kernel page
+table(pvm) enables kernel to use the user's VA in kernel directly without a
+software mock translation.
+
+## Print a page table: Design and Analysis
+
+For each level pgtbl, walk through 512 PTEs, print its pte & pa first, then call
+`vmprint` recursively if it is not the third level pte.
+
+It is fairly easy to implement.
+
+## A kernel page table per process: Design and Analysis
+
+1. Add a members to `struct proc`: `kpagetable`
+2. Init the members when call `allocproc()`:<br/>
+   For `kpagetable`, use a slightly different version of `kvminit()`<br/>
+   For `kstack`, just copy the related code of `procinit()` to `allocproc()`,
+   add a mapping to `kpagetable`
+3. How to change the kernel page table?<br/>
+   Scheduling of every process is controled by `scheduler`, we just need to
+   change the kernel page table to the process which **is going to** run.
+   Specifically, use `w_satp(MAKE_SATP(p->kpagetable))` to change the kernel
+   page table<br/>
+   When a process is done or no user process at all, change to kernel own pgtbl.
+4. Add some clean code to `freeproc()`<br/>
+   Only one thing need to mention here: while we are freeing pvm, walk bottom up
+   the pgtbl, zero out all PTEs and free up the pgtbl **besides leaf page**.
+
+## Simplify `copyin`/`copyinstr`: Design and Analysis
+
+What `copyin`/`copyinstr` used to do:
+They need to use **user pointer** in kernel space, but cannot use the pgtbl via
+**hardware tranlation** to dereference the pointer. So, it performs this by
+walking the process pagetable in software approach.
+
+So, what we need to do is obivious:
+Maintain the user page table in pvm => Need to change the process's pvm when
+user page table changes.
+
+I choose to copy user page table to its pvm every time it changes. Implement a
+`pvmcopy()` to do this. Only one thing need to mention here: Remove the PTE_U
+flag to enable kernel access the pgtbl.
+
+When will user page table change?
+* `userinit()`, `fork()`, `exec()`: just copy from 0 to the end to its pvm
+* `sbrk()`: call `pvmcopy()` when increase the address space;
+            call `pvmclr()` when decrease the address space
+
+---
+
+> The following is the note **while doing** the lab.
+
+# pgtbl
+
 > In this [lab](https://pdos.csail.mit.edu/6.S081/2020/labs/pgtbl.html) you will
 > explore page tables and modify them to simplify the functions that copy data
 > from user space to kernel space.
