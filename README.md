@@ -52,3 +52,21 @@ Plan of guide:
 +   va = PGROUNDDOWN(va);
     struct proc *p = myproc();
 ```
+
+<b>*</b> filetest read error => bug03
+
+It seems like that my `copyout` simulating COW faults failed. Okay, it is.
+I use the same approach as lazy lab, aka. handle page fault in `walkaddr`. But
+I do not need to handle with **load page fault**, but only **store page fault**.
+
+```diff
+  copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len){
+    uint64 n, va0, pa0;
+
+    while(len > 0){
+      va0 = PGROUNDDOWN(dstva);
++     if(cowcopy(pagetable, va0))
++       return -1;
+      pa0 = walkaddr(pagetable, va0);
+```
+

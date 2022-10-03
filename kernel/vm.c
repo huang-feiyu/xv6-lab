@@ -107,11 +107,6 @@ walkaddr(pagetable_t pagetable, uint64 va)
     return 0;
   if((*pte & PTE_U) == 0)
     return 0;
-  if((*pte & PTE_C) == 0){
-    if(cowcopy(pagetable, va))
-      return 0;
-    pte = walk(pagetable, va, 0);
-  }
 
   pa = PTE2PA(*pte);
   return pa;
@@ -366,6 +361,8 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 
   while(len > 0){
     va0 = PGROUNDDOWN(dstva);
+    if(cowcopy(pagetable, va0))
+      return -1;
     pa0 = walkaddr(pagetable, va0);
     if(pa0 == 0)
       return -1;
