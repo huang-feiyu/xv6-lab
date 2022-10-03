@@ -107,6 +107,12 @@ walkaddr(pagetable_t pagetable, uint64 va)
     return 0;
   if((*pte & PTE_U) == 0)
     return 0;
+  if((*pte & PTE_C) == 0){
+    if(cowcopy(pagetable, va))
+      return 0;
+    pte = walk(pagetable, va, 0);
+  }
+
   pa = PTE2PA(*pte);
   return pa;
 }

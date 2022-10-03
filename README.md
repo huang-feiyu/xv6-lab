@@ -30,7 +30,7 @@ Plan of guide:
    (3) Decrement when `usertrap` handler drop it<br/>
    (4) Decrement when `kfree` drop it, only if refcnt = 0, `kfree` place it back
        to freelist
-4. 
+4. `copyout()`: use the same scheme as page faults when it encounters a COW page
 
 ### DEBUG
 

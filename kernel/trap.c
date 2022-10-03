@@ -69,7 +69,7 @@ usertrap(void)
     // ok
   } else if(r_scause() == 15) {
     // store page fault
-    if(cowcopy(r_stval())){
+    if(cowcopy(p->pagetable, r_stval())){
       p->killed = 1;
     }
   } else {
@@ -228,11 +228,10 @@ devintr()
  *           Huang (c) 2022-10-03
  */
 int
-cowcopy(uint64 va)
+cowcopy(pagetable_t pagetable, uint64 va)
 {
   va = PGROUNDDOWN(va);
-  struct proc *p = myproc();
-  pte_t *pte = walk(p->pagetable, va, 0);
+  pte_t *pte = walk(pagetable, va, 0);
   uint64 pa = PTE2PA(*pte);
   uint flags = PTE_FLAGS(*pte);
   char *mem;
@@ -250,7 +249,7 @@ cowcopy(uint64 va)
       return -1; // no more free page
     }
     memmove(mem, (char*)pa, PGSIZE);
-    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, (flags & (~PTE_C)) | PTE_W) != 0){
+    if(mappages(pagetable, va, PGSIZE, (uint64)mem, (flags & (~PTE_C)) | PTE_W) != 0){
       kfree(mem);
       return -1;
     }
