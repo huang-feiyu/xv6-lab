@@ -231,7 +231,11 @@ int
 cowcopy(pagetable_t pagetable, uint64 va)
 {
   va = PGROUNDDOWN(va);
+  if(va >= MAXVA) return -1;
+
   pte_t *pte = walk(pagetable, va, 0);
+  if(pte == 0) return -1;
+
   uint64 pa = PTE2PA(*pte);
   uint flags = PTE_FLAGS(*pte);
   char *mem;

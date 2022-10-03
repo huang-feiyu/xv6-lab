@@ -70,3 +70,16 @@ I do not need to handle with **load page fault**, but only **store page fault**.
       pa0 = walkaddr(pagetable, va0);
 ```
 
+<b>*</b> `copyout` failed immediately: panic: kerneltrap. => bug04
+
+`copyout` pass invalid pointers, we need to add some if stmts to deal with.
+
+```diff
+  int
+  cowcopy(pagetable_t pagetable, uint64 va)
+  {
+    va = PGROUNDDOWN(va);
++   if(va >= MAXVA) return -1;
+    pte_t *pte = walk(pagetable, va, 0);
++   if(pte == 0) return -1;
+```
