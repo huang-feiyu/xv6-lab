@@ -58,14 +58,18 @@ kfree(void *pa)
   if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
     panic("kfree");
 
+  acquire(&refcnt_lock);
   if(refcnt[PG_INDEX((uint64)pa)] == 0)
     goto free; // for freerange init
 
   refcnt[PG_INDEX((uint64)pa)]--;
-  if(refcnt[PG_INDEX((uint64)pa)] != 0)
+  if(refcnt[PG_INDEX((uint64)pa)] != 0){
+    release(&refcnt_lock);
     return; // if someone is still using it, do nothing
+  }
 
  free:
+  release(&refcnt_lock);
   // Fill with junk to catch dangling refs.
   memset(pa, 1, PGSIZE);
 

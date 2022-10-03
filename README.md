@@ -83,3 +83,26 @@ I do not need to handle with **load page fault**, but only **store page fault**.
     pte_t *pte = walk(pagetable, va, 0);
 +   if(pte == 0) return -1;
 ```
+
+<b>*</b> FAILED -- lost some free pages 32443 (out of 32444) => bug05
+
+According to others, it seems like concurrency issue. Some processes call
+`kfree` the same time.
+
+```diff
+void
+kfree(void *pa)
+{
++ acquire(&refcnt_lock);
+  if(refcnt[PG_INDEX((uint64)pa)] == 0)
+    goto free; // for freerange init
+
+  refcnt[PG_INDEX((uint64)pa)]--;
+  if(refcnt[PG_INDEX((uint64)pa)] != 0){
++   release(&refcnt_lock);
+    return; // if someone is still using it, do nothing
+  }
+
+ free:
++ release(&refcnt_lock);
+```
