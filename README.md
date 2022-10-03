@@ -24,3 +24,10 @@ Plan of guide:
    for both child and parent
 2. `usertrap`: handle store page fault on COW page, copy the old to the new and
    install it in PTE with PTE_W set and PTE_C clear
+3. Maintain refcnt<br/>
+   (1) Set refcnt when `kalloc` allocates it<br/>
+   (2) Increment when `fork` causes child share it<br/>
+   (3) Decrement when `usertrap` handler drop it<br/>
+   (4) Decrement when `kfree` drop it, only if refcnt = 0, `kfree` place it back
+       to freelist
+4. 

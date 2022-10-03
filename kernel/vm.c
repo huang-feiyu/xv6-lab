@@ -328,6 +328,7 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
     if(mappages(new, i, PGSIZE, (uint64)pa, (flags & (~PTE_W)) | PTE_C) != 0){
       goto err;
     }
+    refcnt[PG_INDEX(pa)]++;
   }
   return 0;
 

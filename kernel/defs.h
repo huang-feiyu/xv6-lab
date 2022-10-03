@@ -64,8 +64,8 @@ void*           kalloc(void);
 void            kfree(void *);
 void            kinit(void);
 
-#define PG_INDEX(pa) ((pa - KERNBASE) / PGSIZE)
-extern uint refcnt[];
+uint            PG_INDEX(uint64 pa);
+extern uint     refcnt[];
 extern struct spinlock refcnt_lock;
 
 // log.c

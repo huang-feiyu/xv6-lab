@@ -253,6 +253,7 @@ cowcopy(uint64 va)
       kfree(mem);
       return -1;
     }
+    refcnt[PG_INDEX(pa)]--; // refcnt--, because someone use a new physical page
   }
 
   return 0;

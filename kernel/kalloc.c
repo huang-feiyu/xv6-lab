@@ -33,6 +33,8 @@ kinit()
   freerange(end, (void*)PHYSTOP);
 
   initlock(&refcnt_lock, "refcnt");
+  for(uint i = 0; i < NELEM(refcnt); i++)
+    refcnt[i] = 0;
 }
 
 void
@@ -56,6 +58,14 @@ kfree(void *pa)
   if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
     panic("kfree");
 
+  if(refcnt[PG_INDEX((uint64)pa)] == 0)
+    goto free; // for freerange init
+
+  refcnt[PG_INDEX((uint64)pa)]--;
+  if(refcnt[PG_INDEX((uint64)pa)] == 0)
+    return; // if someone is still using it, do nothing
+
+ free:
   // Fill with junk to catch dangling refs.
   memset(pa, 1, PGSIZE);
 
@@ -81,7 +91,15 @@ kalloc(void)
     kmem.freelist = r->next;
   release(&kmem.lock);
 
-  if(r)
-    memset((char*)r, 5, PGSIZE); // fill with junk
+  if(r){
+    refcnt[PG_INDEX((uint64)r)] = 1; // init refcnt for PA
+    memset((char*)r, 5, PGSIZE);     // fill with junk
+  }
+
   return (void*)r;
+}
+
+uint
+PG_INDEX(uint64 pa){
+  return (pa - KERNBASE) / PGSIZE;
 }
