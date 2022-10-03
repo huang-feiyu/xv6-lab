@@ -31,3 +31,14 @@ Plan of guide:
    (4) Decrement when `kfree` drop it, only if refcnt = 0, `kfree` place it back
        to freelist
 4. 
+
+### DEBUG
+
+<b>*</b> User program cannot stop => bug01
+
+```diff
+  refcnt[PG_INDEX((uint64)pa)]--;
+- if(refcnt[PG_INDEX((uint64)pa)] == 0)
++ if(refcnt[PG_INDEX((uint64)pa)] != 0)
+    return; // if someone is still using it, do nothing
+```

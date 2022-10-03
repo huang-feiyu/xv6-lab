@@ -62,7 +62,7 @@ kfree(void *pa)
     goto free; // for freerange init
 
   refcnt[PG_INDEX((uint64)pa)]--;
-  if(refcnt[PG_INDEX((uint64)pa)] == 0)
+  if(refcnt[PG_INDEX((uint64)pa)] != 0)
     return; // if someone is still using it, do nothing
 
  free:
