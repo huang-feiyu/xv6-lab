@@ -320,11 +320,11 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto err;
-    memmove(mem, (char*)pa, PGSIZE);
-    if(mappages(new, i, PGSIZE, (uint64)mem, flags) != 0){
-      kfree(mem);
+
+    // do not allocate physical page, just map to child's pgtbl
+    *pte = (*pte & (~PTE_W)) | PTE_C;
+
+    if(mappages(new, i, PGSIZE, (uint64)pa, (flags & (~PTE_W)) | PTE_C) != 0){
       goto err;
     }
   }

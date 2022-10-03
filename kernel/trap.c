@@ -67,6 +67,11 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 15) {
+    // store page fault
+    if(cowcopy(r_stval())){
+      p->killed = 1;
+    }
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
@@ -218,3 +223,37 @@ devintr()
   }
 }
 
+/*
+ * cowcopy - copy cow page to new mem with PTE_W set and PTE_C clear
+ *           Huang (c) 2022-10-03
+ */
+int
+cowcopy(uint64 va)
+{
+  struct proc *p = myproc();
+  pte_t *pte = walk(p->pagetable, va, 0);
+  uint64 pa = PTE2PA(*pte);
+  uint flags = PTE_FLAGS(*pte);
+  char *mem;
+
+  if(flags | PTE_C){
+    // not a cow page, left to kernel
+    return 0;
+  }
+
+  if(refcnt[PG_INDEX(pa)] == 1){
+    // only one `myproc()` reference count
+    *pte = (*pte & (~PTE_W)) | PTE_C;
+  } else {
+    if((mem = kalloc()) == 0){
+      return -1; // no more free page
+    }
+    memmove(mem, (char*)pa, PGSIZE);
+    if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, (flags & (~PTE_C)) | PTE_W) != 0){
+      kfree(mem);
+      return -1;
+    }
+  }
+
+  return 0;
+}

@@ -18,3 +18,9 @@ There two main jobs we need to do:
 * Prototype
 For COW mapping, use RSW in PTE to record.
 For reference count, maintain a fixed-size array of indexes to page.
+
+Plan of guide:
+1. `uvmcopy`: map parent's physical page to child, clear PTE_W and set PTE_C
+   for both child and parent
+2. `usertrap`: handle store page fault on COW page, copy the old to the new and
+   install it in PTE with PTE_W set and PTE_C clear
