@@ -230,6 +230,7 @@ devintr()
 int
 cowcopy(uint64 va)
 {
+  va = PGROUNDDOWN(va);
   struct proc *p = myproc();
   pte_t *pte = walk(p->pagetable, va, 0);
   uint64 pa = PTE2PA(*pte);

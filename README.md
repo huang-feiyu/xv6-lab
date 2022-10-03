@@ -42,3 +42,13 @@ Plan of guide:
 + if(refcnt[PG_INDEX((uint64)pa)] != 0)
     return; // if someone is still using it, do nothing
 ```
+
+<b>*</b> Kernel page fault => bug02
+
+```diff
+  int
+  cowcopy(uint64 va)
+  {
++   va = PGROUNDDOWN(va);
+    struct proc *p = myproc();
+```
