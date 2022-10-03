@@ -236,14 +236,14 @@ cowcopy(uint64 va)
   uint flags = PTE_FLAGS(*pte);
   char *mem;
 
-  if(flags | PTE_C){
+  if((flags & PTE_C) == 0){
     // not a cow page, left to kernel
     return 0;
   }
 
   if(refcnt[PG_INDEX(pa)] == 1){
     // only one `myproc()` reference count
-    *pte = (*pte & (~PTE_W)) | PTE_C;
+    *pte = (*pte & (~PTE_C)) | PTE_W;
   } else {
     if((mem = kalloc()) == 0){
       return -1; // no more free page

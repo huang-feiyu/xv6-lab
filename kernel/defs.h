@@ -65,7 +65,7 @@ void            kfree(void *);
 void            kinit(void);
 
 #define PG_INDEX(pa) ((pa - KERNBASE) / PGSIZE)
-extern uint refcnt[(PHYSTOP - KERNBASE) / PGSIZE];
+extern uint refcnt[];
 extern struct spinlock refcnt_lock;
 
 // log.c
@@ -149,6 +149,7 @@ void            trapinit(void);
 void            trapinithart(void);
 extern struct spinlock tickslock;
 void            usertrapret(void);
+int             cowcopy(uint64 va);
 
 // uart.c
 void            uartinit(void);

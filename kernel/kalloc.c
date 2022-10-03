@@ -14,8 +14,8 @@ void freerange(void *pa_start, void *pa_end);
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
 
-extern uint refcnt[(PHYSTOP - KERNBASE) / PGSIZE]; // refcnt to each page
-extern struct spinlock refcnt_lock;
+uint refcnt[(PHYSTOP - KERNBASE) / PGSIZE]; // refcnt to each page
+struct spinlock refcnt_lock;
 
 struct run {
   struct run *next;
