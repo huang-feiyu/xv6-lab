@@ -63,7 +63,6 @@ There two main jobs we need to do:
 1. Handle page fault on a cow page
 2. Maintain reference count to each page
 
-* Prototype
 For COW mapping, use RSW in PTE to record.
 For reference count, maintain a fixed-size array of indexes to page.
 
