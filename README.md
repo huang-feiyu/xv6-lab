@@ -1,5 +1,53 @@
 # cow
 
+> lab 6: Report
+
+## Analysis on content
+
+In Unix, we are likely to use the scheme fork-exec. As I mentioned in lazy lab,
+doing stuff on physical page is expensive. Hence, we need to do some
+optimization while using `fork()`. That's why Copy-on-Write was invented.
+
+Before implement COW, when we call `fork()`, xv6 will entirely copy all pages
+from parent to child. But in COW, when we call `fork()`, xv6 will **not** copy
+anything immediately but mark every PTE to **un-writable**. Only if a process
+wants to write to this specific un-writable page (COW page), we copy the page
+content to the new allocated page. This lab is very similar to lazy lab, we also
+need to handle expections and software translation.
+
+## Copy-on-Write: Design and Analysis
+
+When a user process calls `fork()`, do not copy physical pages immediately, but
+mark every PTEs COW in old page table and **remap** the physical page to new
+**page table**. If user program want to **write** to COW page, will encounter
+a store page fault. We need to handle with COW page fault. In my case, I use
+`cowcopy()` to copy physical page and add mapping to the process's page table.
+To avoid re-free a same physical page, we need to maintain a refcnt for each
+physical page. Only if the page's refcnt is zero, we will really free it.
+
+1. `uvmcopy`: map parent's physical page to child, clear PTE_W and set PTE_C
+   for both child and parent
+2. `usertrap`: handle store page fault on COW page, copy the old to the new when
+   refcnt > 1, just use the page if refcnt = 1<br/>
+   For new physical page, install it to new page table, clear COW flag and set
+   it writable<br/>
+   For old physical page, call `kfree()` to decrement refcnt of it
+3. Maintain refcnt<br/>
+   (1) Set refcnt when `kalloc` allocates it<br/>
+   (2) Increment when `fork` causes child share it<br/>
+   (3) Decrement when `usertrap` handler drop it<br/>
+   (4) Decrement when `kfree` drop it, only if refcnt = 0, `kfree` place it back
+       to freelist
+4. `copyout()`: use the same scheme as trap hdlr when it encounters a COW page<br/>
+   One thing to note here: COW page will only trigger store page table, aka.
+   `copyout()` of software translation. So, do not handle it in `walkaddr`.
+
+---
+
+> The following is notes while doing lab.
+
+# cow
+
 > [cow](https://pdos.csail.mit.edu/6.S081/2020/labs/cow.html) lab will add a
 > feature to xv6: Copy-on-Write fork().
 
@@ -18,19 +66,6 @@ There two main jobs we need to do:
 * Prototype
 For COW mapping, use RSW in PTE to record.
 For reference count, maintain a fixed-size array of indexes to page.
-
-Plan of guide:
-1. `uvmcopy`: map parent's physical page to child, clear PTE_W and set PTE_C
-   for both child and parent
-2. `usertrap`: handle store page fault on COW page, copy the old to the new and
-   install it in PTE with PTE_W set and PTE_C clear
-3. Maintain refcnt<br/>
-   (1) Set refcnt when `kalloc` allocates it<br/>
-   (2) Increment when `fork` causes child share it<br/>
-   (3) Decrement when `usertrap` handler drop it<br/>
-   (4) Decrement when `kfree` drop it, only if refcnt = 0, `kfree` place it back
-       to freelist
-4. `copyout()`: use the same scheme as page faults when it encounters a COW page
 
 ### DEBUG
 
@@ -56,8 +91,8 @@ Plan of guide:
 <b>*</b> filetest read error => bug03
 
 It seems like that my `copyout` simulating COW faults failed. Okay, it is.
-I use the same approach as lazy lab, aka. handle page fault in `walkaddr`. But
-I do not need to handle with **load page fault**, but only **store page fault**.
+I use the same approach as lazy lab, aka. <s>handle page fault in `walkaddr`</s>.
+But I do not need to handle with load page fault, but **only store page fault**.
 
 ```diff
   copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len){
