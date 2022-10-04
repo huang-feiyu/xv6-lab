@@ -1,5 +1,52 @@
 # lazy
 
+> lab 5: Report
+
+## Analysis on content
+
+In Unix, application ask the kernel for heap memory using `sbrk()` syscall. But
+in general, user program **always** acquire \[much] more memory, which will take
+a long time to allocate so many pages. In this lab, we are going to do some
+optimization on it: lazy allocation.
+
+This lab is divided into 3 parts, but they are a whole. Task#1 just tells us
+what `sbrk()` is. Task#2 is the main part of lazy allocation. Task#3 requires
+us to do some exception handling.
+
+## Lazy allocation: Design and Analysis
+
+We will use page table and page fault to implement lazy allocation. To allocate
+physical memory lazily, when user ask `sbrk()` to change its heap memory,
+**only** increase the heap size without allocating physical pages. When user
+encounters a page fault (load page fault or store page fault), handle it by
+allocate one physical page once. Do same thing when do software translation.
+
+1. User ask `sbrk()` to change its heap memory<br/>
+   (1) n < 0, decrease heap memory, call `uvmdealloc()` as before<br/>
+   (2) n > 0, increase heap memory size without doing any process on physical
+       page
+2. User wanna read/write to the "unallocated" addr, aka. the address we handle
+   in `sbrk()`. It will trigger a load/store page fault.<br/>
+   The rest job is obivious: allocate physical page for the "unallocated" addr
+3. `pgalloc()`: allocate physical address for VA<br/>
+   (1) check if is valid<br/>
+   (2) call `kalloc()` to allocate physical page on VA<br/>
+   (3) call `mappages()` to map visual address to physical address on given
+       page table
+4. software translation: xv6 use `copyout()`/`copyin()` to move data back and
+forth between kernel space and user space. The two functions use `walkaddr()` to
+do the main work: find physical page in user pgtbl by given VA. If the address
+is invalid, it will cause load/store page fault normally, we must use the same
+handler to handle with *page fault*.<br/>
+   In my solution, I just add a condition stmt to check if the address is valid.
+   If is, then do nothing; call `pgalloc()`, otherwise.
+
+---
+
+> The following is notes while doing lab.
+
+# lazy
+
 > [lazy](https://pdos.csail.mit.edu/6.S081/2020/labs/lazy.html) lab forces you
 > understand *lazy allocation* deeply.
 
