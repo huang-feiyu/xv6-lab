@@ -3,6 +3,8 @@
 > In this [lab](https://pdos.csail.mit.edu/6.S081/2020/labs/mmap.html), you will
 > implement `mmap` & `munmap` focusing on memory-mapped files.
 
+Before this lab, take MIT 6.S081 [Lecture 17](https://mit-public-courses-cn-translatio.gitbook.io/mit6-s081/lec17-virtual-memory-for-applications-frans).
+
 ## Prepare
 
 ```c
@@ -40,3 +42,24 @@ In this lab, we only implement subset relevant to memory-mapping a file.
   * You can assume that `munmap` will not punch a hole in the middle of a region
 
 ## Memory Map
+
+```
+# user address space
++------------+            <- MAXVA
+| trampoline |
++------------+
+| trapframe  |
++------------+            <- VMAs, always grow up to bottom (NO shrink)
+|            |               (In this lab, a better/complex approach is:
+|    HEAP    |                             sort the VMA by addr asc,
+|            |                             choose the best fit area)
++------------+
+|   stack    |
++------------+
+|    ...     |
++------------+            <- 0
+```
+
+1. Define VMA to keep track of what `mmap` has mapped for each process.<br/>
+   Add fixed-size VMAs to `struct proc`.
+2. Implement `mmap` (Lazy allocation)

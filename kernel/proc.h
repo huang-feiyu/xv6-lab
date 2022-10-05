@@ -80,6 +80,20 @@ struct trapframe {
   /* 280 */ uint64 t6;
 };
 
+// Virtual Memory Area
+struct vma {
+  uint64 start; // VA, allocated by kernel; in xv6, arg addr always 0
+  uint64 end;   // end = addr + len
+  uint64 len;   // len = PAGE_SIZE * n
+
+  int prot;   // PROT_READ/PROT_WRITE, the permmsions
+  int flags;  // MAP_SHARED => should be written back; MAP_PRIVATE => no back
+  int offset; // in xv6, always 0 (X); can unmap part of VMA, offset matters
+
+  struct file *file;
+};
+
+
 enum procstate { UNUSED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
@@ -103,4 +117,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  struct vma *vma[NVMA];       // Virtual memory area
+  uint64 VMA_START;            // Just the top of heap, grow top to bottom
 };
