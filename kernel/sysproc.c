@@ -95,3 +95,23 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+/*
+ * sys_mmap - Create a new mapping in the virtual address space of the calling process
+ *          - Huang (c) 2022-10-05
+ */
+uint64
+sys_mmap(void)
+{
+  return -1;
+}
+
+/*
+ * sys_munmap - Delete the mappings for the specified address range
+ *            - Huang (c) 2022-10-05
+ */
+uint64
+sys_munmap(void)
+{
+  return -1;
+}
