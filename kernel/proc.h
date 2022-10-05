@@ -118,6 +118,6 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  struct vma *vma[NVMA];       // Virtual memory area
+  struct vma vma[NVMA];       // Virtual memory area
   uint64 VMA_START;            // Just the top of heap, grow top to bottom
 };

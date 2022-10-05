@@ -61,5 +61,8 @@ In this lab, we only implement subset relevant to memory-mapping a file.
 ```
 
 1. Define VMA to keep track of what `mmap` has mapped for each process.<br/>
-   Add fixed-size VMAs to `struct proc`.
-2. Implement `mmap` (Lazy allocation)
+   Add fixed-size VMAs to `struct proc`, init members in `allocproc`.
+2. Implement `mmap` (Lazy allocation)<br/>
+   (1) Find free space to map, I use the approach described above<br/>
+   (2) Allocate VMA
+

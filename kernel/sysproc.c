@@ -103,7 +103,50 @@ sys_uptime(void)
 uint64
 sys_mmap(void)
 {
-  return -1;
+  int len, prot, flags, fd, offset;
+  uint64 addr;
+  struct file *file;
+
+  struct proc *p = myproc();
+
+  if(argaddr(0, &addr) < 0 || argint(1, &len) < 0 || argint(2, &prot) < 0 ||
+    argint(3, &flags) < 0 || argfd(4, &fd, &file) < 0 || argint(5, &offset) < 0)
+    return -1;
+
+  // xv6 assumption
+  if(addr != 0 || offset != 0)
+    return -1;
+
+  // validate arguments
+  if(len <= 0 || len % PGSIZE != 0 || file == 0)
+    return -1;
+
+  // check if there is enough space
+  if(p->sz >= p->VMA_START - len)
+    return -1;
+
+  for(int i = 0; i < NVMA; i++){
+    if(p->vma[i].len == 0){
+      p->vma[i].len = len;
+      p->vma[i].start = p->VMA_START;
+      p->vma[i].end = p->VMA_START + len;
+      p->vma[i].prot = prot;
+      p->vma[i].flags = flags;
+      p->vma[i].offset = offset;
+      p->vma[i].file = file;
+
+      p->VMA_START -= len; // grow from top to bottom
+      filedup(file);       // increment refcnt
+
+      // must be page-aligned
+      if(p->vma[i].start % PGSIZE != 0 || p->vma[i].end % PGSIZE != 0)
+        panic("sys_mmap: vma must be page-aligned");
+
+      return p->vma[i].start;
+    }
+  }
+
+  panic("sys_mmap: no more vma");
 }
 
 /*

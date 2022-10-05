@@ -134,6 +134,11 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  // Init for VMAs
+  p->VMA_START = MAXVA - 2 * PGSIZE; // trampoline & trapframe
+  for(int i = 0; i < NVMA; i++)
+    p->vma[i].len = 0; // len=0 => has not been allocated
+
   return p;
 }
 
