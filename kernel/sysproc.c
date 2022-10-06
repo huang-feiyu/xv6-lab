@@ -128,8 +128,8 @@ sys_mmap(void)
   for(int i = 0; i < NVMA; i++){
     if(p->vma[i].len == 0){
       p->vma[i].len = len;
-      p->vma[i].start = p->VMA_START;
-      p->vma[i].end = p->VMA_START + len;
+      p->vma[i].start = p->VMA_START - len;
+      p->vma[i].end = p->VMA_START;
       p->vma[i].prot = prot;
       p->vma[i].flags = flags;
       p->vma[i].offset = offset;

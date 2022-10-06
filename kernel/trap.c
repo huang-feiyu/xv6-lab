@@ -2,9 +2,13 @@
 #include "param.h"
 #include "memlayout.h"
 #include "riscv.h"
+#include "fs.h"
 #include "spinlock.h"
+#include "sleeplock.h"
+#include "file.h"
 #include "proc.h"
 #include "defs.h"
+#include "fcntl.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -67,6 +71,9 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 0xf || r_scause() == 0xd){
+    if(mpgalloc(r_stval()))
+      p->killed = 1;
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
@@ -218,3 +225,54 @@ devintr()
   }
 }
 
+/*
+ * mpgalloc - allocate physical memory and copy file data to mmap page
+ *            Huang (c) 2022-10-06
+ */
+int
+mpgalloc(uint64 va)
+{
+  int i;
+  char *mem;
+  struct proc *p = myproc();
+  uint64 offset;
+  uint64 addr = va;  // VA caused exception
+  uint64 sz = p->sz; // sbrk "has" allocated memory addr
+
+  if (addr >= MAXVA) return -1;
+
+  // find the VMA
+  for(i = 0; i < NVMA; i++)
+    if(p->vma[i].len > 0 && addr >= p->vma[i].start && addr < p->vma[i].end)
+      break;
+
+  if(i == NVMA){
+    if (sz <= addr)              return -2;
+    if (addr < p->trapframe->sp) return -3;
+    return 0; // not in VMA region but valid, left to kernel
+  }
+
+  if(r_scause() == 0xd && !(p->vma[i].prot & PROT_READ))  return -4;
+  if(r_scause() == 0xf && !(p->vma[i].prot & PROT_WRITE)) return -5;
+
+  // read from file
+  addr = PGROUNDDOWN(addr);
+  offset = p->vma[i].offset + addr - p->vma[i].start;
+  mem = kalloc(); if(mem == 0) return -6;
+  memset(mem, 0, PGSIZE);
+
+  if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) != PGSIZE)
+    return -6;
+
+  // map PA to VA
+  uint64 flags = PTE_U;
+  flags |= p->vma[i].prot & PROT_READ  ? PTE_R : 0;
+  flags |= p->vma[i].prot & PROT_WRITE ? PTE_W : 0;
+  flags |= p->vma[i].prot & PROT_EXEC  ? PTE_X : 0;
+  if(mappages(p->pagetable, addr, PGSIZE, (uint64)mem, flags) != 0) {
+    kfree(mem);
+    return -7;
+  }
+
+  return 0;
+}

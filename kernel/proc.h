@@ -83,10 +83,10 @@ struct trapframe {
 // Virtual Memory Area
 struct vma {
   uint64 start; // VA, allocated by kernel; in xv6, arg addr always 0
-  uint64 end;   // end = addr + len
+  uint64 end;   // end = start + len
   uint64 len;   // len = PAGE_SIZE * n
 
-  int prot;   // PROT_READ/PROT_WRITE, the permmsions
+  int prot;   // PROT_READ/PROT_WRITE, the permission
   int flags;  // MAP_SHARED => should be written back; MAP_PRIVATE => no back
   int offset; // in xv6, always 0 (X); can unmap part of VMA, offset matters
 

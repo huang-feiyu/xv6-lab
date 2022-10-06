@@ -65,4 +65,7 @@ In this lab, we only implement subset relevant to memory-mapping a file.
 2. Implement `mmap` (Lazy allocation)<br/>
    (1) Find free space to map, I use the approach described above<br/>
    (2) Allocate VMA
+3. Handle page fault in a mmap-ed region:<br/>
+   (1) Read 4KB data from file to memory<br/>
+   (2) Add mapping to user page table
 
