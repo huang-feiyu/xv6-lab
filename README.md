@@ -114,3 +114,12 @@ sys_mmap(void)
 +   uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
 - uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
 ```
+
+---
+
+```
+Time:   11 Hours
+Score:  140/140
+Author: Huang
+Date:   2022-10-06
+```
