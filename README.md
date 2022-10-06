@@ -69,3 +69,14 @@ In this lab, we only implement subset relevant to memory-mapping a file.
    (1) Read 4KB data from file to memory<br/>
    (2) Add mapping to user page table
 
+### DEBUG
+
+<b>*</b> cannot do mapping twice => bug01
+
+```diff
+mpgalloc(va){
+
+- if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) != PGSIZE)
++ if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) == -1)
+    return -6;
+```

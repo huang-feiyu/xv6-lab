@@ -252,8 +252,10 @@ mpgalloc(uint64 va)
     return 0; // not in VMA region but valid, left to kernel
   }
 
-  if(r_scause() == 0xd && !(p->vma[i].prot & PROT_READ))  return -4;
-  if(r_scause() == 0xf && !(p->vma[i].prot & PROT_WRITE)) return -5;
+  if(r_scause() == 0xd && (!(p->vma[i].prot & PROT_READ)  || !p->vma[i].file->readable))
+    return -4;
+  if(r_scause() == 0xf && (!(p->vma[i].prot & PROT_WRITE) || !p->vma[i].file->writable))
+    return -5;
 
   // read from file
   addr = PGROUNDDOWN(addr);
@@ -261,8 +263,10 @@ mpgalloc(uint64 va)
   mem = kalloc(); if(mem == 0) return -6;
   memset(mem, 0, PGSIZE);
 
-  if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) != PGSIZE)
+  ilock(p->vma[i].file->ip);
+  if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) == -1)
     return -6;
+  iunlock(p->vma[i].file->ip);
 
   // map PA to VA
   uint64 flags = PTE_U;
