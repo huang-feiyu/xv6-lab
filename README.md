@@ -43,7 +43,7 @@ handler to handle with *page fault*.<br/>
 
 ---
 
-> The following is notes while doing lab.
+> The following is note while doing lab.
 
 # lazy
 
