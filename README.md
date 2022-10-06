@@ -68,6 +68,10 @@ In this lab, we only implement subset relevant to memory-mapping a file.
 3. Handle page fault in a mmap-ed region:<br/>
    (1) Read 4KB data from file to memory<br/>
    (2) Add mapping to user page table
+4. Implement `munmap`<br/>
+   (1) Find the VMA for the address range<br/>
+   (2) If MAP_SHARED, write the page back<br/>
+   (3) Unmap specified pages. If remove all pages, decrement refcnt of file
 
 ### DEBUG
 

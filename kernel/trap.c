@@ -259,7 +259,7 @@ mpgalloc(uint64 va)
 
   // read from file
   addr = PGROUNDDOWN(addr);
-  offset = p->vma[i].offset + addr - p->vma[i].start;
+  offset = addr - p->vma[i].start; // VMA offset always 0
   mem = kalloc(); if(mem == 0) return -6;
   memset(mem, 0, PGSIZE);
 

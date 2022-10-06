@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "fcntl.h"
 
 uint64
 sys_exit(void)
@@ -151,10 +152,47 @@ sys_mmap(void)
 
 /*
  * sys_munmap - Delete the mappings for the specified address range
- *            - Huang (c) 2022-10-05
+ *            - Huang (c) 2022-10-06
  */
 uint64
 sys_munmap(void)
 {
-  return -1;
+  int i, len;
+  uint64 addr;
+
+  struct proc *p = myproc();
+
+  if(argaddr(0, &addr) < 0 || argint(1, &len) < 0)
+    return -1;
+
+  // addr = PGROUNDDOWN(addr); // addr always page aligned
+  // find the VMA
+  for(i = 0; i < NVMA; i++)
+    if(p->vma[i].len > 0 && addr >= p->vma[i].start && addr < p->vma[i].end)
+      break;
+
+  if(i == NVMA) return -1;
+
+  // xv6 assumption
+  if(!(addr == p->vma[i].start || addr + len == p->vma[i].end))
+    return -1;
+
+  // validate arguments
+  if(addr != p->vma[i].start + p->vma[i].offset ||  // always unmap in order
+    addr + len > p->vma[i].end || len % PGSIZE != 0)
+    return -1;
+
+  // write back if necessary
+  if(p->vma[i].flags & MAP_SHARED)
+    if(filewrite(p->vma[i].file, addr, len) == -1)
+      return -1;
+
+  // unmap specified pages
+  uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
+  p->vma[i].offset += len;
+  // if unmap all pages, decrement file
+  if(p->vma[i].offset == len)
+    fileclose(p->vma[i].file);
+
+  return 0;
 }
