@@ -72,6 +72,7 @@ In this lab, we only implement subset relevant to memory-mapping a file.
    (1) Find the VMA for the address range<br/>
    (2) If MAP_SHARED, write the page back<br/>
    (3) Unmap specified pages. If remove all pages, decrement refcnt of file
+5. `exit` to unmap the process's mapped regions as if munmap had been called
 
 ### DEBUG
 

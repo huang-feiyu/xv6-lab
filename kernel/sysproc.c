@@ -168,43 +168,11 @@ sys_mmap(void)
 uint64
 sys_munmap(void)
 {
-  int i, len;
+  int len;
   uint64 addr;
-
-  struct proc *p = myproc();
 
   if(argaddr(0, &addr) < 0 || argint(1, &len) < 0)
     return -1;
 
-  // addr = PGROUNDDOWN(addr); // addr always page aligned
-  // find the VMA
-  for(i = 0; i < NVMA; i++)
-    if(p->vma[i].len > 0 && addr >= p->vma[i].start && addr < p->vma[i].end)
-      break;
-
-  if(i == NVMA) return -1;
-
-  // xv6 assumption
-  if(!(addr == p->vma[i].start || addr + len == p->vma[i].end))
-    return -1;
-
-  // validate arguments
-  if(addr != p->vma[i].start + p->vma[i].offset ||  // always unmap in order
-    addr + len > p->vma[i].end || len % PGSIZE != 0)
-    return -1;
-
-  // write back if necessary
-  if(p->vma[i].flags & MAP_SHARED && p->vma[i].prot & PROT_WRITE)
-    filewrite(p->vma[i].file, addr, len); // write might fail
-
-  // unmap specified pages
-  uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
-  p->vma[i].offset += len;
-  // if unmap all pages, decrement file refcnt
-  if(p->vma[i].offset == p->vma[i].len){
-    p->vma[i].len = 0;
-    fileclose(p->vma[i].file);
-  }
-
-  return 0;
+  return munmap(addr, len);
 }
