@@ -194,16 +194,17 @@ sys_munmap(void)
     return -1;
 
   // write back if necessary
-  if(p->vma[i].flags & MAP_SHARED)
-    if(filewrite(p->vma[i].file, addr, len) == -1)
-      return -1;
+  if(p->vma[i].flags & MAP_SHARED && p->vma[i].prot & PROT_WRITE)
+    filewrite(p->vma[i].file, addr, len); // write might fail
 
   // unmap specified pages
   uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
   p->vma[i].offset += len;
-  // if unmap all pages, decrement file
-  if(p->vma[i].offset == len)
+  // if unmap all pages, decrement file refcnt
+  if(p->vma[i].offset == p->vma[i].len){
+    p->vma[i].len = 0;
     fileclose(p->vma[i].file);
+  }
 
   return 0;
 }
