@@ -44,7 +44,7 @@ physical page. Only if the page's refcnt is zero, we will really free it.
 
 ---
 
-> The following is notes while doing lab.
+> The following is note while doing lab.
 
 # cow
 
