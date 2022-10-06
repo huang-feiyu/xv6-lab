@@ -101,3 +101,15 @@ sys_mmap(void)
 +   if(!file->writable && !(flags & MAP_PRIVATE))
 +     return -1;
 ```
+
+<b>*</b> uvmunmap: not mapped => bug03
+
+```diff
+uint64
+sys_mmap(void)
+{
++ // unmap specified pages (has mmapped)
++ if(walkaddr(p->pagetable, addr) != 0)
++   uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
+- uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
+```

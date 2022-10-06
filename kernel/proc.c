@@ -362,6 +362,12 @@ exit(int status)
     }
   }
 
+  for(int i = 0; i < NVMA; i++){
+    if(p->vma[i].len != 0){
+      munmap(p->vma[i].start + p->vma[i].offset, p->vma[i].len - p->vma[i].offset);
+    }
+  }
+
   begin_op();
   iput(p->cwd);
   end_op();
@@ -742,8 +748,9 @@ munmap(uint64 addr, int len)
   if(p->vma[i].flags & MAP_SHARED && p->vma[i].prot & PROT_WRITE)
     filewrite(p->vma[i].file, addr, len); // write might fail
 
-  // unmap specified pages
-  uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
+  // unmap specified pages (has mmapped)
+  if(walkaddr(p->pagetable, addr) != 0)
+    uvmunmap(p->pagetable, addr, len / PGSIZE, 1);
   p->vma[i].offset += len;
   // if unmap all pages, decrement file refcnt
   if(p->vma[i].offset == p->vma[i].len){
