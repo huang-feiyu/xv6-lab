@@ -84,3 +84,19 @@ mpgalloc(va){
 + if(readi(p->vma[i].file->ip, 0, (uint64)mem, offset, PGSIZE) == -1)
     return -6;
 ```
+
+<b>*</b> permission issue => bug02
+
+```diff
+uint64
+sys_mmap(void)
+{
+
++ if(prot & PROT_READ)
++   if(!file->readable)
++     return -1;
+
++ if(prot & PROT_WRITE)
++   if(!file->writable && !(flags & MAP_PRIVATE))
++     return -1;
+```

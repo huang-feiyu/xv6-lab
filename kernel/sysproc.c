@@ -4,7 +4,10 @@
 #include "date.h"
 #include "param.h"
 #include "memlayout.h"
+#include "fs.h"
 #include "spinlock.h"
+#include "sleeplock.h"
+#include "file.h"
 #include "proc.h"
 #include "fcntl.h"
 
@@ -121,6 +124,14 @@ sys_mmap(void)
   // validate arguments
   if(len <= 0 || len % PGSIZE != 0 || file == 0)
     return -1;
+
+  if(prot & PROT_READ)
+    if(!file->readable)
+      return -1;
+
+  if(prot & PROT_WRITE)
+    if(!file->writable && !(flags & MAP_PRIVATE))
+      return -1;
 
   // check if there is enough space
   if(p->sz >= p->VMA_START - len)

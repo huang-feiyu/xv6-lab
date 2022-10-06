@@ -252,9 +252,9 @@ mpgalloc(uint64 va)
     return 0; // not in VMA region but valid, left to kernel
   }
 
-  if(r_scause() == 0xd && (!(p->vma[i].prot & PROT_READ)  || !p->vma[i].file->readable))
+  if(r_scause() == 0xd && !(p->vma[i].prot & PROT_READ))
     return -4;
-  if(r_scause() == 0xf && (!(p->vma[i].prot & PROT_WRITE) || !p->vma[i].file->writable))
+  if(r_scause() == 0xf && !(p->vma[i].prot & PROT_WRITE))
     return -5;
 
   // read from file
