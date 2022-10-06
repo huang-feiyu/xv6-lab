@@ -24,12 +24,12 @@ we need to allocate a stack for each thread.
 2. `thread_schedule()`: Switch old thread to new, call assembly code to do this
    (The code is almost the same as *kernel/swtch.S*)
 
-## Using threads
+## Using threads: Design and Analysis
 
 Add a mutex lock to each bucket, for each element, find its bucket and lock it
 until go through all critical section. Nothing special.
 
-## Barrier
+## Barrier: Design and Analysis
 
 Wait for condition variable, broadcast after all threads reach. Use a global
 variable to store number of threads, if number of waiting threads has reached
@@ -37,7 +37,7 @@ nthread, then broadcast, wait otherwise.
 
 ---
 
-> The following is notes while doing lab.
+> The following is note while doing lab.
 
 # thread
 
