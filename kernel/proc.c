@@ -305,6 +305,14 @@ fork(void)
       np->ofile[i] = filedup(p->ofile[i]);
   np->cwd = idup(p->cwd);
 
+  // copy vmas
+  for(i = 0; i < NVMA; i++)
+    if(p->vma[i].len != 0){
+      np->vma[i] = p->vma[i];
+      filedup(p->vma[i].file);
+    }
+
+
   safestrcpy(np->name, p->name, sizeof(p->name));
 
   pid = np->pid;
