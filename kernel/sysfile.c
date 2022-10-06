@@ -524,7 +524,7 @@ sys_pipe(void)
 }
 
 /*
- * sys_symlink - reates a symbolic `link` which contains string `target`
+ * sys_symlink - creates a symbolic `link` which contains string `target`
  *             - Huang (c) 2022-09-19
  */
 uint64
