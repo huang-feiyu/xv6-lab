@@ -1,5 +1,64 @@
 # lock
 
+> lab 8: Report
+
+Memory Allocator: In this task, we will implement a multi-thread safe data
+structure for xv6's memory allocator. Roughly, we will implement **a lock per
+freelist on cpu** to reduce contention. The main idea is: ensure serilization
+in critical section using lock.
+
+1. Init every lock in `kinit`
+2. When `kalloc` is called, following the algorithm below:<br/>
+  (1) Get the cpu id via `cpuid()` <br/>
+  (2) Acquire the freelist lock for this cpu/freelist<br/>
+  (3) Check whether there is a free run. If is, remove it from freelist, goto
+      (5); Otherwise, continue to (4)<br/>
+  (4) Walk through every freelist: Acquire its lock and check whether there is a
+      free run. If is, move the free run to current freelist, goto (5). After
+      checking release the lock.
+      (If no such one, just return nullptr, panic whatever)
+  (5) Release the freelist lock for this cpu/freelist
+3. For `kfree`: Acquire current lock, add the run to freelist, release the lock
+
+
+Buffer cache: Because not all operations need a big lock, we are going to use
+lock with different granularities to ensure correctness. It's what xv6 wants me
+to do, but I just use locks in specific order to avoiding using big lock.
+
+Data structures: one bcache contains a big lock and multiple hash buckets. A
+hash bucket contains an individual lock and a buf list.
+
+<img src="https://user-images.githubusercontent.com/70138429/191880045-5c22aa54-3476-423d-b97d-ca584ac32c06.png" width="400px"></img>
+
+* `binit`: Do initial stuff
+  1. Init big lock of bcache and locks for all hash buckets
+  2. Init buf list for each bucket. At first, add all bufs to bucket[0] (Other
+     can steal from bucket[0])
+* `bget`: Find a free buf and return<br/>
+  Lock policy: always hold bucket[i]'s lock, walk through others' lock
+  **orderly** (i.e, i+1 -> i+2 -> i+3 ... mod NBUF)
+  1. Acquire bucket[i]'s lock
+  2. Walk through bucket[i]'s buf list to check if already cached. If is,
+     release lock and return.
+  3. Otherwise, we need to steal a buf from others using LRU policy
+     (Give up finding one within itself)
+  4. Acquire bucket[i+j]'s lock
+  5. Walk through bucket[i+j]'s buf list to find a LRU buf. If no such one,
+    release bucket[i+j]'s lock and goto 4 for another bucket[i+j+1].
+  6. Otherwise, move the LRU buf from bucket[i+j] to bucket[i], release the two
+    locks and return
+* `breles`: Decrement refcnt of a buf and maintain timestamp here
+  1. Acquire bucket[i]'s lock
+  2. Decrement refcnt and update timestamp
+  3. Release the lock
+* `bpin`/`bunpin`: Change big lock to bucket[i]'s lock
+
+---
+
+> The following is note while doing this lab.
+
+# lock
+
 > In [lock](https://pdos.csail.mit.edu/6.S081/2020/labs/lock.html) lab, you'll
 > gain experience in re-designing code to increase parallelism
 
