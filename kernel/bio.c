@@ -104,7 +104,7 @@ bget(uint dev, uint blockno)
     }
   }
 
-  p = (p + 1) % NBUCKET; // NOTE: give up find in bucket itself
+  p = (p + 1) % NBUCKET; // NOTE: give up finding in bucket itself
   while(1){
     // apporximately LRU policy: (Bad design?)
     //  find the LRU buf in one bucket a time via timestamp
